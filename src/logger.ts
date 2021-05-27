@@ -21,7 +21,7 @@ function getRequestId() {
   return myRequestId
 }
 
-export function createLoggerFunction(logDir : string, logLevel : string) {
+export function createMyLogger(logDir : string, logLevel : string) {
   const consoleFormat = format.combine(format.colorize({ all : true }),
                                        format.splat(),
                                        format.prettyPrint(),
@@ -65,10 +65,3 @@ export function createLoggerFunction(logDir : string, logLevel : string) {
 
   return Logger
 }
-
-
-
-// TODO export function createLogger(logDir, logLevel) : Logger
-// Logger will have logging functions
-
-// export { logger }
