@@ -3,64 +3,72 @@ import {
          transports,
          format
        }                    from 'winston'
-import { HTTP }             from './http-constants'
 import { getNamespace }     from 'cls-hooked'
 import moment               from 'moment'
 import DailyRotateFile      from 'winston-daily-rotate-file'
 
 const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
-      LOG_DIR          = './logs',
-      LOG_LEVEL        = 'silly'
+      namespaceName    = 'My Request',
+      requestId        = 'requestId',
+      defaultRequestId = '---',
+      DATE_PATTERN     = 'DD-MM-YYYY',
+      FILENAME         = '%DATE%.log'
 
 function getRequestId() {
-  const myRequest = getNamespace(HTTP.Constants.namespaceName),
-        requestId = myRequest && myRequest.get(HTTP.Constants.requestId) || HTTP.Constants.defaultRequestId
+  const myRequest   = getNamespace(namespaceName),
+        myRequestId = myRequest && myRequest.get(requestId) || defaultRequestId
 
-  return requestId
+  return myRequestId
 }
 
-const consoleFormat = format.combine(format.colorize({ all : true }),
-                                     format.splat(),
-                                     format.prettyPrint(),
-                                     format.printf(info => `${info.message}`))
+export function createLoggerFunction(logDir : string, logLevel : string) {
+  const consoleFormat = format.combine(format.colorize({ all : true }),
+                                       format.splat(),
+                                       format.prettyPrint(),
+                                       format.printf(info => `${info.message}`))
 
-const winstonLogger = createLogger({
-  level      : LOG_LEVEL,
-  format     : format.combine(
-    format.splat(),
-    format.prettyPrint(),
-    format.printf(info => `${info.message}`)
-  ),
-  transports : [
-    new transports.Console({ format : format.combine(format.colorize(), consoleFormat) }),
-    new DailyRotateFile({
-      dirname     : LOG_DIR,
-      filename    : '%DATE%.log',
-      datePattern : 'DD-MM-YYYY'
-    })
-  ]
-})
+  const winstonLogger = createLogger({
+    level      : logLevel,
+    format     : format.combine(
+      format.splat(),
+      format.prettyPrint(),
+      format.printf(info => `${info.message}`)
+    ),
+    transports : [
+      new transports.Console({ format : format.combine(format.colorize(), consoleFormat) }),
+      new DailyRotateFile({
+        dirname     : logDir,
+        filename    : FILENAME,
+        datePattern : DATE_PATTERN
+      })
+    ]
+  })
 
-const logger = {
-  error : (msg : string, ...args : any) => {
-    msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
-    winstonLogger.error(msg, ...args)
-  },
-  warn  : (msg : string, ...args : any) => {
-    msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
-    winstonLogger.warn(msg, ...args)
-  },
-  info  : (msg : string, ...args : any) => {
-    msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
-    winstonLogger.info(msg, ...args)
-  },
-  debug : (msg : string, ...args : any) => {
-    msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
-    winstonLogger.debug(msg, ...args)
+  const Logger = {
+    error : (msg : string, ...args : any) => {
+      msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
+      winstonLogger.error(msg, ...args)
+    },
+    warn  : (msg : string, ...args : any) => {
+      msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
+      winstonLogger.warn(msg, ...args)
+    },
+    info  : (msg : string, ...args : any) => {
+      msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
+      winstonLogger.info(msg, ...args)
+    },
+    debug : (msg : string, ...args : any) => {
+      msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
+      winstonLogger.debug(msg, ...args)
+    }
   }
+
+  return Logger
 }
+
+
 
 // TODO export function createLogger(logDir, logLevel) : Logger
 // Logger will have logging functions
 
-export { logger }
+// export { logger }
