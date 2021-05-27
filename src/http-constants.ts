@@ -1,4 +1,4 @@
-const HTTP = {
+export const HTTP = {
   HeaderKey   : {
     userAgent        : 'user-agent',
     clientSecret     : 'x-client-secret',
@@ -48,5 +48,3 @@ const HTTP = {
     defaultRequestId : '---'
   }
 }
-
-export { HTTP }

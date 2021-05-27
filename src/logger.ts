@@ -1,16 +1,12 @@
 import {
-          createLogger,
-          transports,
-          format
-        }                 from 'winston'
-import    moment          from 'moment'
-import    DailyRotateFile from 'winston-daily-rotate-file'
-import { 
-          getNamespace
-        }                 from 'cls-hooked'
-import { 
-          HTTP
-        }                 from './http-constants'
+         createLogger,
+         transports,
+         format
+       }                    from 'winston'
+import { HTTP }             from './http-constants'
+import { getNamespace }     from 'cls-hooked'
+import moment               from 'moment'
+import DailyRotateFile      from 'winston-daily-rotate-file'
 
 const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
       LOG_DIR          = './logs',
@@ -63,5 +59,8 @@ const logger = {
     winstonLogger.debug(msg, ...args)
   }
 }
+
+// TODO export function createLogger(logDir, logLevel) : Logger
+// Logger will have logging functions
 
 export { logger }
