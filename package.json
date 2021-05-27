@@ -1,0 +1,22 @@
+{
+  "name": "node-utils",
+  "version": "1.0.0",
+  "description": "Node utils for AffordPlan node servers.",
+  "main": "lib/index.js",
+  "scripts": {
+    "postinstall": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/cls-hooked": "^4.3.3",
+    "@types/node": "^15.6.1",
+    "@types/typescript": "^2.0.0",
+    "aws-sdk": "^2.914.0",
+    "cls-hooked": "^4.2.2",
+    "moment": "^2.29.1",
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.5"
+  }
+}
