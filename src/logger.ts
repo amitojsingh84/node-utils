@@ -1,5 +1,5 @@
 import {
-         createLogger,
+         createLogger as winstonCreateLogger,
          transports,
          format
        }                    from 'winston'
@@ -21,13 +21,13 @@ function getRequestId() {
   return myRequestId
 }
 
-export function createMyLogger(logDir : string, logLevel : string) {
+export function createLogger(logDir : string, logLevel : string) {
   const consoleFormat = format.combine(format.colorize({ all : true }),
                                        format.splat(),
                                        format.prettyPrint(),
                                        format.printf(info => `${info.message}`))
 
-  const winstonLogger = createLogger({
+  const winstonLogger = winstonCreateLogger({
     level      : logLevel,
     format     : format.combine(
       format.splat(),
@@ -65,3 +65,8 @@ export function createMyLogger(logDir : string, logLevel : string) {
 
   return Logger
 }
+
+// Logger => class
+// create logger using the constructor
+
+// create server => certificates, etc, port, logger params => router and logger
