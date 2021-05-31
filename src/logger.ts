@@ -16,8 +16,8 @@ const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
 
 class Logger {
 
-  private consoleFormat : any
-  private winstonLogger : any
+  private consoleFormat
+  private winstonLogger
 
   constructor(logDir : string, logLevel : string) {
     this.consoleFormat = format.combine(format.colorize({ all : true }),
