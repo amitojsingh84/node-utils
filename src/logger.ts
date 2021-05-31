@@ -14,59 +14,61 @@ const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
       DATE_PATTERN     = 'DD-MM-YYYY',
       FILENAME         = '%DATE%.log'
 
-function getRequestId() {
-  const myRequest   = getNamespace(namespaceName),
-        myRequestId = myRequest && myRequest.get(requestId) || defaultRequestId
+class Logger {
 
-  return myRequestId
-}
+  private consoleFormat : any
+  private winstonLogger : any
 
-export function createLogger(logDir : string, logLevel : string) {
-  const consoleFormat = format.combine(format.colorize({ all : true }),
-                                       format.splat(),
-                                       format.prettyPrint(),
-                                       format.printf(info => `${info.message}`))
+  constructor(logDir : string, logLevel : string) {
+    this.consoleFormat = format.combine(format.colorize({ all : true }),
+                                         format.splat(),
+                                         format.prettyPrint(),
+                                         format.printf(info => `${info.message}`))
 
-  const winstonLogger = winstonCreateLogger({
-    level      : logLevel,
-    format     : format.combine(
-      format.splat(),
-      format.prettyPrint(),
-      format.printf(info => `${info.message}`)
-    ),
-    transports : [
-      new transports.Console({ format : format.combine(format.colorize(), consoleFormat) }),
-      new DailyRotateFile({
-        dirname     : logDir,
-        filename    : FILENAME,
-        datePattern : DATE_PATTERN
-      })
-    ]
-  })
-
-  const Logger = {
-    error : (msg : string, ...args : any) => {
-      msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
-      winstonLogger.error(msg, ...args)
-    },
-    warn  : (msg : string, ...args : any) => {
-      msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
-      winstonLogger.warn(msg, ...args)
-    },
-    info  : (msg : string, ...args : any) => {
-      msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
-      winstonLogger.info(msg, ...args)
-    },
-    debug : (msg : string, ...args : any) => {
-      msg = `${moment().format(DATE_TIME_FORMAT)} ${getRequestId()} ` + msg
-      winstonLogger.debug(msg, ...args)
-    }
+    this.winstonLogger = winstonCreateLogger({
+      level      : logLevel,
+      format     : format.combine(
+        format.splat(),
+        format.prettyPrint(),
+        format.printf(info => `${info.message}`)
+      ),
+      transports : [
+        new transports.Console({ format : format.combine(format.colorize(), this.consoleFormat) }),
+        new DailyRotateFile({
+          dirname     : logDir,
+          filename    : FILENAME,
+          datePattern : DATE_PATTERN
+        })
+      ]
+    })
   }
 
-  return Logger
+  private getRequestId() {
+    const myRequest   = getNamespace(namespaceName),
+          myRequestId = myRequest && myRequest.get(requestId) || defaultRequestId
+  
+    return myRequestId
+  }
+    
+  error(msg : string, ...args : any) {
+    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.getRequestId()} ` + msg
+    this.winstonLogger.error(msg, ...args)
+  }
+
+  warn(msg : string, ...args : any) {
+    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.getRequestId()} ` + msg
+    this.winstonLogger.warn(msg, ...args)
+  }
+
+  info(msg : string, ...args : any) {
+    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.getRequestId()} ` + msg
+    this.winstonLogger.info(msg, ...args)
+  }
+
+  debug(msg : string, ...args : any) {
+    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.getRequestId()} ` + msg
+    this.winstonLogger.debug(msg, ...args)
+  }
 }
 
-// Logger => class
-// create logger using the constructor
-
-// create server => certificates, etc, port, logger params => router and logger
+export { Logger }
