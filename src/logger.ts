@@ -14,7 +14,7 @@ const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
       DATE_PATTERN     = 'DD-MM-YYYY',
       FILENAME         = '%DATE%.log'
 
-class Logger {
+export class Logger {
 
   private consoleFormat
   private winstonLogger
@@ -70,5 +70,3 @@ class Logger {
     this.winstonLogger.debug(msg, ...args)
   }
 }
-
-export { Logger }
