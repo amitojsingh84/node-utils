@@ -1,5 +1,3 @@
-import  * as logger  from './logger'
-import  * as server  from './server'
-import  * as router  from './router'
-
-export { logger, server, router }
+export * from './logger'
+export * from './router'
+export * from './server'

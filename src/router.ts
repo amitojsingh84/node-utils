@@ -1,6 +1,5 @@
 import { Logger } from './logger'
-import * as http from 'http'
-import { AnyAaaaRecord } from 'dns'
+import * as http  from 'http'
 
 export type API = {
   fn     : (params : any) => Promise<any>

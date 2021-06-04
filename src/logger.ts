@@ -3,14 +3,11 @@ import {
          transports,
          format
        }                    from 'winston'
-import { getNamespace }     from 'cls-hooked'
 import moment               from 'moment'
 import DailyRotateFile      from 'winston-daily-rotate-file'
+import * as lo              from 'lodash' 
 
 const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
-      namespaceName    = 'My Request',
-      requestId        = 'requestId',
-      defaultRequestId = '---',
       DATE_PATTERN     = 'DD-MM-YYYY',
       FILENAME         = '%DATE%.log'
 
@@ -19,7 +16,7 @@ export class Logger {
   private consoleFormat
   private winstonLogger
 
-  constructor(logDir : string, logLevel : string) {
+  constructor(logDir : string, logLevel : string, private requestId : string = '---') {
     this.consoleFormat = format.combine(format.colorize({ all : true }),
                                          format.splat(),
                                          format.prettyPrint(),
@@ -43,30 +40,35 @@ export class Logger {
     })
   }
 
-  private getRequestId() {
-    const myRequest   = getNamespace(namespaceName),
-          myRequestId = myRequest && myRequest.get(requestId) || defaultRequestId
-  
-    return myRequestId
+  public cloneLogger(requestId ?: string) : Logger {
+    const newLogger = lo.cloneDeep<Logger>(this)
+
+    if(requestId) newLogger.setRequestId(requestId)
+
+    return newLogger
+  }
+
+  public setRequestId(requestId : string) {
+    this.requestId = requestId
   }
     
-  error(msg : string, ...args : any) {
-    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.getRequestId()} ` + msg
+  public error(msg : string, ...args : any) {
+    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger.error(msg, ...args)
   }
 
-  warn(msg : string, ...args : any) {
-    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.getRequestId()} ` + msg
+  public warn(msg : string, ...args : any) {
+    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger.warn(msg, ...args)
   }
 
-  info(msg : string, ...args : any) {
-    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.getRequestId()} ` + msg
+  public info(msg : string, ...args : any) {
+    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger.info(msg, ...args)
   }
 
-  debug(msg : string, ...args : any) {
-    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.getRequestId()} ` + msg
+  public debug(msg : string, ...args : any) {
+    msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger.debug(msg, ...args)
   }
 }

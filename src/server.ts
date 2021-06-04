@@ -13,7 +13,7 @@ export class Server {
   private router : Router
   private logger : Logger
 
-  constructor(keyPath : string, certPath : string, port : number, router : Router, logger : Logger) {
+  constructor(keyPath : string, certPath : string, private port : number, router : Router, logger : Logger) {
     
     this.router = router
     this.logger = logger
@@ -28,11 +28,13 @@ export class Server {
     } else {
       this.server = http.createServer(this.handleRequest.bind(this))
     }
-    this.runServer(port)
-   
+
+    this.runServer()
   }
 
   async handleRequest(req : http.IncomingMessage, res : http.ServerResponse) {
+
+    const requestLogger = this.logger.cloneLogger() // pass new random requestId for each request
     const { method, url } = req
 
     if(!method || !url) {
@@ -43,7 +45,7 @@ export class Server {
 
     const params = await this.getData(req)
 
-    await this.router.callApi(this.logger, method, url, params, res)
+    await this.router.callApi(requestLogger, method, url, params, res)
   }
 
   async getData(req : http.IncomingMessage) {
@@ -60,10 +62,10 @@ export class Server {
     })
   }
 
-  runServer(port : number) {
-    this.server.listen(port)
+  runServer() {
+    this.server.listen(this.port)
     this.server.on('error', this.onError)
-    this.server.on('listening', this.onListening)
+    this.server.on('listening', this.onListening.bind(this, this.port))
   }
   
   onError(err : any) {
@@ -71,7 +73,7 @@ export class Server {
     process.exit(1)
   }
 
-  onListening() {
-    console.info('Server listening')
+  onListening(port : number) {
+    console.info('Server listening', port)
   }
 }   
