@@ -1,5 +1,6 @@
-import { Logger } from './logger'
 import * as http  from 'http'
+import { Logger } from './logger'
+import { HTTP }   from './http-constatnts'
 
 export type API = {
   fn     : (params : any) => Promise<any>
@@ -22,9 +23,8 @@ export class Router {
     this.registry.push(api)
   }
 
-  async callApi(logger : Logger, method : string, path : string, params : any, res : http.ServerResponse) {
-
-    logger.debug('callApi %s %s %s', method, path, params)
+  async verifyRequest(logger : Logger, method : string, path : string, res : http.ServerResponse) : Promise<any> {
+    logger.debug('verifyRequest %s %s', method, path)
 
     const api = this.registry.find((api : API) => api.method === method && api.path === path)
 
@@ -32,22 +32,28 @@ export class Router {
 
     if(!api) {
       logger.debug('API not found %s %s', method, path)
-      return res.end(this.sendErrorResponse(res, 'Not found'))
+      return res.end(this.sendErrorResponse(res, 'Not found', 404, HTTP.HeaderValue.json))
     }
 
-    let resp : any = {}
-
-    if(api.method === 'GET') {
-      resp = await api.fn(params)
-    } else if(api.method === 'POST') {
-      resp = await api.fn(JSON.parse(params))
-    }
-
-    return res.end(this.sendSuccessResponse(res, resp))
+    return api
   }
 
-  sendSuccessResponse(res : http.ServerResponse, response : any) {
-    res.writeHead(200, {'Content-Type': 'application/json'})
+  async callApi(logger : Logger, api : API, params : any, res : http.ServerResponse) {
+
+    logger.debug('callApi %s %s', api, params)
+    try {
+      const resp = await api.fn(params)
+      logger.debug('Sending success response %s', resp)
+
+      return res.end(this.sendSuccessResponse(res, resp, 200, HTTP.HeaderValue.json))
+    } catch(err) {
+      logger.debug('Sending error response %s', err)
+      return res.end(this.sendErrorResponse(res, err, 404, HTTP.HeaderValue.json))
+    }
+  }
+
+  public sendSuccessResponse(res : http.ServerResponse, response : any, statusCode : number, contentType : string) {
+    res.writeHead(statusCode, { [HTTP.HeaderKey.contentType] : contentType })
     const data = {
       success : OPERATION_SUCCESS,
       response
@@ -57,8 +63,8 @@ export class Router {
     return JSON.stringify(resp)
   }
 
-  sendErrorResponse(res : http.ServerResponse, errMessage : string) {
-    res.writeHead(404, {'Content-Type': 'application/json'})
+  public sendErrorResponse(res : http.ServerResponse, errMessage : string, statusCode : number, contentType : string) {
+    res.writeHead(statusCode, { [HTTP.HeaderKey.contentType] : contentType })
     const data = {
       error              : VALIDATION_ERROR,
       [VALIDATION_ERROR] : errMessage 
