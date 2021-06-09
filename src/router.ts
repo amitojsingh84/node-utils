@@ -15,31 +15,37 @@ const OPERATION_SUCCESS : string = 'OperationSuccess',
 export class Router {
 
   private registry : Registry = []
-  
+  // private api : API = null as any
+
   registerApi(logger : Logger, method : string, path : string, fn : (params : any) => Promise<any>) {
     logger.debug('registerApi %s %s %s', method, path, fn)
-
+    console.log(fn)
     const api : API = { method, path, fn }
+    // this.api = api
     this.registry.push(api)
   }
 
-  async verifyRequest(logger : Logger, method : string, path : string, res : http.ServerResponse) : Promise<any> {
+ verifyRequest(logger : Logger, method : string, path : string) {
     logger.debug('verifyRequest %s %s', method, path)
 
     const api = this.registry.find((api : API) => api.method === method && api.path === path)
 
-    logger.debug('Api %s %s %s', method, path, api)
+    logger.debug('Api %s %s', method, path)
 
     if(!api) {
-      logger.debug('API not found %s %s', method, path)
-      return res.end(this.sendErrorResponse(res, 'Not found', 404, HTTP.HeaderValue.json))
+      logger.debug('API not found %s', method)
+      return false
     }
 
-    return api
+    return true
   }
 
-  async callApi(logger : Logger, api : API, params : any, res : http.ServerResponse) {
+  async callApi(logger : Logger, method : string, path : string, params : any, res : http.ServerResponse) {
 
+    const api = this.registry.find((api : API) => api.method === method && api.path === path)
+    // const api = this.api
+    if(!api) return
+    
     logger.debug('callApi %s %s', api, params)
     try {
       const resp = await api.fn(params)

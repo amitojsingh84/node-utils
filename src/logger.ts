@@ -40,14 +40,6 @@ export class Logger {
     })
   }
 
-  public cloneLogger(requestId ?: string) : Logger {
-    const newLogger = lo.cloneDeep<Logger>(this)
-
-    if(requestId) newLogger.setRequestId(requestId)
-
-    return newLogger
-  }
-
   public setRequestId(requestId : string) {
     this.requestId = requestId
   }

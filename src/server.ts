@@ -31,8 +31,6 @@ export class Server {
     } else {
       this.server = http.createServer(this.handleRequest.bind(this))
     }
-
-    this.runServer()
   }
 
   async handleRequest(req : http.IncomingMessage, res : http.ServerResponse) {
@@ -40,8 +38,9 @@ export class Server {
     const { headers, method, url }          = req,
           requestId                : any    = headers[HTTP.HeaderKey.requestId]
                                                 ? headers[HTTP.HeaderKey.requestId]?.slice(0, 3) 
-                                                : this.getRandomRequestId(),
-          requestLogger            : Logger = this.logger.cloneLogger(requestId)
+                                                : this.getRandomRequestId()                                        
+
+    this.logger.setRequestId(requestId)
 
     this.logger.debug('handleRequest %s %s', method, url)
 
@@ -51,12 +50,23 @@ export class Server {
       return
     }
 
-    this.logger.debug('Method and Url %s %s', method, url)
+    const urlObj = URL.parse(url),
+          query  = urlObj.query,
+          path   = urlObj.pathname
 
-    const api = await this.router.verifyRequest(requestLogger, method, url, res)
-    this.logger.debug('verified request %s %s', method, url)
+    if(!path) return
 
-    const query = URL.parse(url).query
+    this.logger.debug('Method Url and path %s %s %s', method, url, path)
+
+    const apiExists = this.router.verifyRequest(this.logger, method, path)
+
+    if(!apiExists) {
+      res.end(this.router.sendErrorResponse(res, 'Not found', 404, HTTP.HeaderValue.json))
+      return
+    }
+
+    this.logger.debug('verified request %s %s', method, path)
+
     this.logger.debug('query %s', query)
 
     let params = {}
@@ -64,19 +74,19 @@ export class Server {
     switch(method) {
 
       case HTTP.Method.GET  :
-        params = this.parseQuery(query)
+        params = await this.parseQuery(query)
         break
 
       case HTTP.Method.POST :
-        params = this.parseBody(req, res)
+        params = await this.parseBody(req, res)
         break
 
       default :
-        this.logger.error('Rejecting request with invalid method %s %s', method, url)
+        this.logger.error('Rejecting request with invalid method %s %s %s', method, url, path)
         this.router.sendErrorResponse(res, 'Rejecting request with invalid method', 404, HTTP.HeaderValue.json)
     }
 
-    await this.router.callApi(requestLogger, api, params, res)
+    await this.router.callApi(this.logger, method, path, params, res)
   }
 
   async parseQuery(query : string | null) {
@@ -142,12 +152,12 @@ export class Server {
   }
   
   onError(err : any) {
-    console.error('Error on server. %s', err)
+    this.logger.error('Error on server. %s', err)
     process.exit(1)
   }
 
   onListening(port : number) {
-    console.info('Server listening', port)
+    this.logger.info('Server listening on %s', port)
   }
 
   getRandomRequestId() {
