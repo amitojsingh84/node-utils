@@ -1,7 +1,7 @@
 export const HTTP = {
   HeaderKey   : {
-    contentType      : 'content-type',
-    requestId        : 'request-id'
+    contentType : 'content-type',
+    requestId   : 'request-id'
   },
   
   HeaderValue : {
@@ -16,5 +16,12 @@ export const HTTP = {
     GET    : 'GET',
     POST   : 'POST',
     DELETE : 'DELETE'
+  },
+
+  ErrorCode   : {
+    OK          : 200,
+    NOT_FOUND   : 404,
+    BAD_REQUEST : 400,
+    BAD_GATEWAY : 502
   }
 }

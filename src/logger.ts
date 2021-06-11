@@ -5,7 +5,6 @@ import {
        }                    from 'winston'
 import moment               from 'moment'
 import DailyRotateFile      from 'winston-daily-rotate-file'
-import * as lo              from 'lodash' 
 
 const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
       DATE_PATTERN     = 'DD-MM-YYYY',
@@ -16,7 +15,7 @@ export class Logger {
   private consoleFormat
   private winstonLogger
 
-  constructor(logDir : string, logLevel : string, private requestId : string = '---') {
+  constructor(private logDir : string, private logLevel : string, private requestId : string = '---') {
     this.consoleFormat = format.combine(format.colorize({ all : true }),
                                          format.splat(),
                                          format.prettyPrint(),
@@ -40,10 +39,11 @@ export class Logger {
     })
   }
 
-  public setRequestId(requestId : string) {
-    this.requestId = requestId
+  public cloneLogger(requestId ?: string) : Logger {
+     
+    return new Logger(this.logDir, this.logLevel, requestId)
   }
-    
+  
   public error(msg : string, ...args : any) {
     msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger.error(msg, ...args)
