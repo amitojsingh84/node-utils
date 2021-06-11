@@ -16,6 +16,7 @@ export class Server {
   private router : Router
   private logger : Logger
 
+  // TODO : keypath and certpath can be undefined
   constructor(keyPath : string, certPath : string, private port : number, router : Router, logger : Logger) {
     
     this.router = router
@@ -50,11 +51,11 @@ export class Server {
       return
     }
 
-    const urlObj = URL.parse(url),
+    const urlObj = URL.parse(url),  // TODO : this is deprecated, change it
           query  = urlObj.query,
           path   = urlObj.pathname
 
-    if(!path) {
+    if(!path) { // 404 not found
       requestLogger.debug('Invalid request %s %s', method, url)
       this.router.sendErrorResponse(res, 'Invalid request', HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json)
       return
@@ -121,6 +122,7 @@ export class Server {
   async parseBody(requestLogger : Logger, req : http.IncomingMessage, res : http.ServerResponse) {
     requestLogger.debug('parseQuery')
 
+    // TODO : make a seperate function : convert stream to data
     const body : string = await new Promise((resolve, reject) => {
       let body = ''
       req.on('data', (chunk) => {
@@ -150,6 +152,7 @@ export class Server {
     }
   }
 
+  // TODO : make it public function
   runServer() {
     this.server.listen(this.port)
     this.server.on('error', this.onError)

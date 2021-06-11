@@ -4,6 +4,7 @@ import {
          format
        }                    from 'winston'
 import moment               from 'moment'
+import * as winston         from 'winston'
 import DailyRotateFile      from 'winston-daily-rotate-file'
 
 const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
@@ -12,8 +13,8 @@ const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
 
 export class Logger {
 
-  private consoleFormat
-  private winstonLogger
+  private consoleFormat : winston.Logform.Format
+  private winstonLogger : winston.Logger
 
   constructor(private logDir : string, private logLevel : string, private requestId : string = '---') {
     this.consoleFormat = format.combine(format.colorize({ all : true }),
@@ -44,22 +45,22 @@ export class Logger {
     return new Logger(this.logDir, this.logLevel, requestId)
   }
   
-  public error(msg : string, ...args : any) {
+  public error(msg : string, ...args : Array<string | number | Error | undefined | null>) {
     msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger.error(msg, ...args)
   }
 
-  public warn(msg : string, ...args : any) {
+  public warn(msg : string, ...args : Array<string | number | Error | undefined | null>) {
     msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger.warn(msg, ...args)
   }
 
-  public info(msg : string, ...args : any) {
+  public info(msg : string, ...args : Array<string | number | Error | undefined | null>) {
     msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger.info(msg, ...args)
   }
 
-  public debug(msg : string, ...args : any) {
+  public debug(msg : string, ...args : Array<string | number | Error | undefined | null>) {
     msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger.debug(msg, ...args)
   }
