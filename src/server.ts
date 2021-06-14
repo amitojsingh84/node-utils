@@ -7,8 +7,11 @@ import * as URL    from 'url'
 import { Router }  from './router'
 import { Logger }  from './logger'
 import { HTTP }    from './http-constatnts'
+import { Errors }  from './errors'
+import { APError } from './ap-error'
 
-const UTF8 = 'utf8'
+const UTF8        = 'utf8',
+      HTTP_STRING = 'http://'
 
 export class Server {
 
@@ -16,8 +19,7 @@ export class Server {
   private router : Router
   private logger : Logger
 
-  // TODO : keypath and certpath can be undefined
-  constructor(keyPath : string, certPath : string, private port : number, router : Router, logger : Logger) {
+  constructor(private port : number, router : Router, logger : Logger, keyPath ?: string, certPath ?: string) {
     
     this.router = router
     this.logger = logger
@@ -34,67 +36,74 @@ export class Server {
     }
   }
 
-  async handleRequest(req : http.IncomingMessage, res : http.ServerResponse) {
+  public runServer() {
+    this.server.listen(this.port)
+    this.server.on('error', this.onError)
+    this.server.on('listening', this.onListening.bind(this, this.port))
+  }
+
+/*------------------------------------------------------------------------------
+PRIVATE METHODS
+------------------------------------------------------------------------------*/
+
+  private async handleRequest(req : http.IncomingMessage, res : http.ServerResponse) {
 
     const { headers, method, url }          = req,
           requestId                : any    = headers[HTTP.HeaderKey.requestId]
                                                 ? headers[HTTP.HeaderKey.requestId]?.slice(0, 3) 
                                                 : this.getRandomRequestId()
 
-    const requestLogger = this.logger.cloneLogger(requestId)
+    const requestLogger : Logger        = this.logger.cloneLogger(requestId),
+          errArr        : Array<string> = []
 
     requestLogger.debug('handleRequest %s %s', method, url)
+    try {
+      if(!method || !url) {
+        requestLogger.error('Invalid request %s %s', method, url)
+        throw new APError(Errors.name.INVALID_REQUEST, Errors.message.INVALID_REQUEST)
+      }
 
-    if(!method || !url) {
-      requestLogger.debug('Invalid request %s %s', method, url)
-      this.router.sendErrorResponse(res, 'Invalid request', HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json)
-      return
+      const baseUrl = [HTTP_STRING, headers.host].join(''),
+            urlObj  = new URL.URL(url, baseUrl),
+            query   = urlObj.search ? urlObj.search.slice(1) : urlObj.search,
+            path    = urlObj.pathname
+
+      if(!path) {
+        requestLogger.error('Invalid request %s %s', method, url)
+        throw new APError(Errors.name.INVALID_REQUEST, Errors.message.INVALID_REQUEST)
+      }
+
+      requestLogger.debug('Method Url and path %s %s %s', method, url, path)
+
+      const api = await this.router.verifyRequest(requestLogger, method, path)
+      requestLogger.debug('verified request %s %s', method, path)
+
+      requestLogger.debug('query %s', query)
+
+      let params = {}
+
+      switch(method) {
+
+        case HTTP.Method.GET  :
+          params = await this.parseQuery(requestLogger, query)
+          break
+
+        case HTTP.Method.POST :
+          params = await this.parseBody(requestLogger, req)
+          break
+
+        default :
+          requestLogger.error('Rejecting request with invalid method %s %s %s', method, url, path)
+          throw new APError(Errors.name.INVALID_METHOD, Errors.message.INVALID_METHOD)
+      }
+
+      await this.router.callApi(requestLogger, api, params, res)
+    } catch(err) {
+      res.end(this.router.sendErrorResponse(res, [err], HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json))
     }
-
-    const urlObj = URL.parse(url),  // TODO : this is deprecated, change it
-          query  = urlObj.query,
-          path   = urlObj.pathname
-
-    if(!path) { // 404 not found
-      requestLogger.debug('Invalid request %s %s', method, url)
-      this.router.sendErrorResponse(res, 'Invalid request', HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json)
-      return
-    }
-    requestLogger.debug('Method Url and path %s %s %s', method, url, path)
-
-    const api = this.router.verifyRequest(requestLogger, method, path)
-
-    if(!api) {
-      res.end(this.router.sendErrorResponse(res, 'Not found', HTTP.ErrorCode.NOT_FOUND, HTTP.HeaderValue.json))
-      return
-    }
-
-    requestLogger.debug('verified request %s %s', method, path)
-
-    requestLogger.debug('query %s', query)
-
-    let params = {}
-
-    switch(method) {
-
-      case HTTP.Method.GET  :
-        params = await this.parseQuery(requestLogger, query)
-        break
-
-      case HTTP.Method.POST :
-        params = await this.parseBody(requestLogger, req, res)
-        break
-
-      default :
-        requestLogger.error('Rejecting request with invalid method %s %s %s', method, url, path)
-        this.router.sendErrorResponse(res, 'Rejecting request with invalid method', HTTP.ErrorCode.BAD_REQUEST,
-                                      HTTP.HeaderValue.json)
-    }
-
-    await this.router.callApi(requestLogger, api, params, res)
   }
 
-  async parseQuery(requestLogger : Logger, query : string | null) {
+  private async parseQuery(requestLogger : Logger, query : string | null) {
     requestLogger.debug('parseQuery %s', query)
 
     if(!query) return {}
@@ -115,24 +124,14 @@ export class Server {
         params[key] = keywords[value]
       }
     }
-    requestLogger.debug('Query parsed %s %s', query, params)
+    requestLogger.debug('Query parsed %s %s', query, JSON.stringify(params))
     return params
   }
 
-  async parseBody(requestLogger : Logger, req : http.IncomingMessage, res : http.ServerResponse) {
+  private async parseBody(requestLogger : Logger, req : http.IncomingMessage) {
     requestLogger.debug('parseQuery')
 
-    // TODO : make a seperate function : convert stream to data
-    const body : string = await new Promise((resolve, reject) => {
-      let body = ''
-      req.on('data', (chunk) => {
-        body += chunk.toString()
-      }).on('end', () => {
-        resolve(body)
-      }).on('error', (err) => {
-        reject(err)
-      })
-    })
+    const body : string = await this.getData(req)
 
     requestLogger.debug('parseQuery body %s', body)
 
@@ -145,36 +144,40 @@ export class Server {
           return JSON.parse(body)
         } catch (err) {
           requestLogger.error('Could not parse post data as json %s', body)
-          this.router.sendErrorResponse(res, 'Could not parse post data as json', HTTP.ErrorCode.BAD_REQUEST,
-                                        HTTP.HeaderValue.json)
           return { body }
         }
     }
   }
-
-  // TODO : make it public function
-  runServer() {
-    this.server.listen(this.port)
-    this.server.on('error', this.onError)
-    this.server.on('listening', this.onListening.bind(this, this.port))
-  }
   
-  onError(err : any) {
+  private async getData(req : http.IncomingMessage) : Promise<string> {
+    return await new Promise((resolve, reject) => {
+      let data = ''
+      req.on('data', (chunk) => {
+        data += chunk.toString()
+      }).on('end', () => {
+        resolve(data)
+      }).on('error', (err) => {
+        reject(err)
+      })
+    })
+  }
+
+  private onError(err : any) {
     this.logger.error('Error on server. %s', err)
     process.exit(1)
   }
 
-  onListening(port : number) {
+  private onListening(port : number) {
     this.logger.info('Server listening on %s', port)
   }
 
-  getRandomRequestId() {
+  private getRandomRequestId() {
     const requestId = `${this.getRandomCharacter()}${this.getRandomCharacter()}${this.getRandomCharacter()}`
   
     return requestId
   }
 
-  getRandomCharacter() {
+  private getRandomCharacter() {
     return String.fromCharCode(65 + lo.random(0, 25, false))
   }
 } 

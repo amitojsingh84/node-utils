@@ -21,7 +21,6 @@ export const HTTP = {
   ErrorCode   : {
     OK          : 200,
     NOT_FOUND   : 404,
-    BAD_REQUEST : 400,
-    BAD_GATEWAY : 502
+    BAD_REQUEST : 400
   }
 }
