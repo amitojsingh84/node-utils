@@ -3,7 +3,7 @@ import * as https  from 'https'
 import * as fs     from 'fs'
 import * as lo     from 'lodash'
 import * as qs     from 'querystring'
-import * as URL    from 'url'
+import * as url    from 'url'
 import { Router }  from './router'
 import { Logger }  from './logger'
 import { HTTP }    from './http-constatnts'
@@ -48,32 +48,33 @@ PRIVATE METHODS
 
   private async handleRequest(req : http.IncomingMessage, res : http.ServerResponse) {
 
-    const { headers, method, url }          = req,
-          requestId                : any    = headers[HTTP.HeaderKey.requestId]
+    const { headers, method, url: reqUrl }  = req,
+          requestId                         = headers[HTTP.HeaderKey.requestId]
                                                 ? headers[HTTP.HeaderKey.requestId]?.slice(0, 3) 
                                                 : this.getRandomRequestId()
 
-    const requestLogger : Logger        = this.logger.cloneLogger(requestId),
-          errArr        : Array<string> = []
+    const requestLogger : Logger = this.logger.cloneLogger(requestId as string) // TODO : remove type casting
 
-    requestLogger.debug('handleRequest %s %s', method, url)
+    requestLogger.debug('handleRequest %s %s', method, reqUrl)
     try {
-      if(!method || !url) {
-        requestLogger.error('Invalid request %s %s', method, url)
+      if(!method || !reqUrl) {
+        requestLogger.error('Invalid request %s %s', method, reqUrl)
         throw new APError(Errors.name.INVALID_REQUEST, Errors.message.INVALID_REQUEST)
+        // TODO : Send NOT FOUND response (404)
       }
 
-      const baseUrl = [HTTP_STRING, headers.host].join(''),
-            urlObj  = new URL.URL(url, baseUrl),
+      const baseUrl = [HTTP_STRING, headers.host].join(''), // TODO : not proper way
+            urlObj  = new url.URL(reqUrl, baseUrl),
             query   = urlObj.search ? urlObj.search.slice(1) : urlObj.search,
             path    = urlObj.pathname
 
       if(!path) {
-        requestLogger.error('Invalid request %s %s', method, url)
+        requestLogger.error('Invalid request %s %s', method, reqUrl)
         throw new APError(Errors.name.INVALID_REQUEST, Errors.message.INVALID_REQUEST)
+        // TODO : Send NOT FOUND response (404)
       }
 
-      requestLogger.debug('Method Url and path %s %s %s', method, url, path)
+      requestLogger.debug('Method Url and path %s %s %s', method, reqUrl, path)
 
       const api = await this.router.verifyRequest(requestLogger, method, path)
       requestLogger.debug('verified request %s %s', method, path)
@@ -93,7 +94,7 @@ PRIVATE METHODS
           break
 
         default :
-          requestLogger.error('Rejecting request with invalid method %s %s %s', method, url, path)
+          requestLogger.error('Rejecting request with invalid method %s %s %s', method, reqUrl, path)
           throw new APError(Errors.name.INVALID_METHOD, Errors.message.INVALID_METHOD)
       }
 
@@ -103,8 +104,8 @@ PRIVATE METHODS
     }
   }
 
-  private async parseQuery(requestLogger : Logger, query : string | null) {
-    requestLogger.debug('parseQuery %s', query)
+  private async parseQuery(logger : Logger, query : string | null) {
+    logger.debug('parseQuery %s', query)
 
     if(!query) return {}
 
@@ -113,7 +114,6 @@ PRIVATE METHODS
                               true      : true,
                               false     : false,
                               null      : null,
-                              undefined : undefined,
                               ''        : undefined
                            }
 
@@ -124,26 +124,26 @@ PRIVATE METHODS
         params[key] = keywords[value]
       }
     }
-    requestLogger.debug('Query parsed %s %s', query, JSON.stringify(params))
+    logger.debug('Query parsed %s %s', query, JSON.stringify(params))
     return params
   }
 
-  private async parseBody(requestLogger : Logger, req : http.IncomingMessage) {
-    requestLogger.debug('parseQuery')
+  private async parseBody(logger : Logger, req : http.IncomingMessage) {
+    logger.debug('parseQuery')
 
     const body : string = await this.getData(req)
 
-    requestLogger.debug('parseQuery body %s', body)
+    logger.debug('parseQuery body %s', body)
 
     switch (req.headers[HTTP.HeaderKey.contentType]) {
       case HTTP.HeaderValue.form :
-        return this.parseQuery(requestLogger, body)
+        return this.parseQuery(logger, body)
 
       default :
         try {
           return JSON.parse(body)
         } catch (err) {
-          requestLogger.error('Could not parse post data as json %s', body)
+          logger.error('Could not parse post data as json %s', body)
           return { body }
         }
     }

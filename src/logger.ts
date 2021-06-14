@@ -1,8 +1,3 @@
-import {
-         createLogger as winstonCreateLogger,
-         transports,
-         format
-       }                    from 'winston'
 import moment               from 'moment'
 import * as winston         from 'winston'
 import DailyRotateFile      from 'winston-daily-rotate-file'
@@ -17,20 +12,21 @@ export class Logger {
   private winstonLogger : winston.Logger
 
   constructor(private logDir : string, private logLevel : string, private requestId : string = '---') {
-    this.consoleFormat = format.combine(format.colorize({ all : true }),
-                                         format.splat(),
-                                         format.prettyPrint(),
-                                         format.printf(info => `${info.message}`))
+    this.consoleFormat = winston.format.combine(winston.format.colorize({ all : true }),
+                                                winston.format.splat(),
+                                                winston.format.prettyPrint(),
+                                                winston.format.printf(info => `${info.message}`))
 
-    this.winstonLogger = winstonCreateLogger({
+    this.winstonLogger = winston.createLogger({
       level      : logLevel,
-      format     : format.combine(
-        format.splat(),
-        format.prettyPrint(),
-        format.printf(info => `${info.message}`)
+      format     : winston.format.combine(
+        winston.format.splat(),
+        winston.format.prettyPrint(),
+        winston.format.printf(info => `${info.message}`)
       ),
       transports : [
-        new transports.Console({ format : format.combine(format.colorize(), this.consoleFormat) }),
+        new winston.transports.Console({ format : winston.format.combine(winston.format.colorize(),
+                                                                         this.consoleFormat) }),
         new DailyRotateFile({
           dirname     : logDir,
           filename    : FILENAME,
@@ -41,7 +37,6 @@ export class Logger {
   }
 
   public cloneLogger(requestId ?: string) : Logger {
-     
     return new Logger(this.logDir, this.logLevel, requestId)
   }
   

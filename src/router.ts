@@ -15,7 +15,7 @@ export type Registry = Array<API>
 const OPERATION_SUCCESS : string = 'OperationSuccess',
       VALIDATION_ERROR  : string = 'ValidationError'
 
-export class Router {
+export abstract class Router {
 
   private registry : Registry = []
 
