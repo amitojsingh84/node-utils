@@ -1,23 +1,29 @@
-import * as http   from 'http'
-import * as https  from 'https'
-import * as fs     from 'fs'
-import * as lo     from 'lodash'
-import * as qs     from 'querystring'
-import * as url    from 'url'
-import { Router }  from './router'
-import { Logger }  from './logger'
-import { HTTP }    from './http-constatnts'
-import { Errors }  from './errors'
-import { APError } from './ap-error'
+import * as http          from 'http'
+import * as https         from 'https'
+import * as fs            from 'fs'
+import * as lo            from 'lodash'
+import * as qs            from 'querystring'
+import * as url           from 'url'
+import { Router }         from './router'
+import { Logger }         from './logger'
+import { HTTP }           from './http-constatnts'
+import { Errors }         from './errors'
+import { APError }        from './ap-error'
+import { streamToString } from './utils'
 
-const UTF8        = 'utf8',
-      HTTP_STRING = 'http://'
+const UTF8 = 'utf8'
+
+const PROTOCOLS = {
+        HTTP  : 'http://',
+        HTTPS : 'https://'
+      }
 
 export class Server {
 
-  private server : https.Server | http.Server
-  private router : Router
-  private logger : Logger
+  private server   : https.Server | http.Server
+  private router   : Router
+  private logger   : Logger
+  private protocol : string
 
   constructor(private port : number, router : Router, logger : Logger, keyPath ?: string, certPath ?: string) {
     
@@ -30,16 +36,22 @@ export class Server {
             credentials = { key, cert }
       
       this.server = https.createServer(credentials, this.handleRequest.bind(this))
-                    
+      this.protocol = PROTOCOLS.HTTPS
     } else {
       this.server = http.createServer(this.handleRequest.bind(this))
+      this.protocol = PROTOCOLS.HTTP
     }
   }
 
-  public runServer() {
+  public start() {
     this.server.listen(this.port)
     this.server.on('error', this.onError)
     this.server.on('listening', this.onListening.bind(this, this.port))
+  }
+  
+  public stop() {
+    this.logger.debug('server stopped.')
+    process.exit(1)
   }
 
 /*------------------------------------------------------------------------------
@@ -49,35 +61,42 @@ PRIVATE METHODS
   private async handleRequest(req : http.IncomingMessage, res : http.ServerResponse) {
 
     const { headers, method, url: reqUrl }  = req,
-          requestId                         = headers[HTTP.HeaderKey.requestId]
-                                                ? headers[HTTP.HeaderKey.requestId]?.slice(0, 3) 
-                                                : this.getRandomRequestId()
+          requestId                         = this.getRequestId(headers)
 
-    const requestLogger : Logger = this.logger.cloneLogger(requestId as string) // TODO : remove type casting
+    const requestLogger : Logger = this.logger.cloneLogger(requestId)
 
     requestLogger.debug('handleRequest %s %s', method, reqUrl)
+
     try {
+
       if(!method || !reqUrl) {
         requestLogger.error('Invalid request %s %s', method, reqUrl)
-        throw new APError(Errors.name.INVALID_REQUEST, Errors.message.INVALID_REQUEST)
-        // TODO : Send NOT FOUND response (404)
+        this.router.sendNotFoundResponse(res, [Errors.message.NOT_FOUND])
+        return
       }
-
-      const baseUrl = [HTTP_STRING, headers.host].join(''), // TODO : not proper way
+      
+      const baseUrl = [this.protocol, headers.host].join(''),
             urlObj  = new url.URL(reqUrl, baseUrl),
             query   = urlObj.search ? urlObj.search.slice(1) : urlObj.search,
             path    = urlObj.pathname
 
+      requestLogger.debug('query and path %s %s', query, path)
+
       if(!path) {
         requestLogger.error('Invalid request %s %s', method, reqUrl)
-        throw new APError(Errors.name.INVALID_REQUEST, Errors.message.INVALID_REQUEST)
-        // TODO : Send NOT FOUND response (404)
+        this.router.sendNotFoundResponse(res, [Errors.message.NOT_FOUND])
+        return
       }
 
       requestLogger.debug('Method Url and path %s %s %s', method, reqUrl, path)
 
-      const api = await this.router.verifyRequest(requestLogger, method, path)
+      const api = await this.router.verifyRequest(requestLogger, headers, method, path, res)
+      
       requestLogger.debug('verified request %s %s', method, path)
+
+      if(!api) {
+        throw new APError(Errors.name.NOT_FOUND, Errors.message.NOT_FOUND)
+      }
 
       requestLogger.debug('query %s', query)
 
@@ -100,7 +119,7 @@ PRIVATE METHODS
 
       await this.router.callApi(requestLogger, api, params, res)
     } catch(err) {
-      res.end(this.router.sendErrorResponse(res, [err], HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json))
+      requestLogger.error('Some error occured')
     }
   }
 
@@ -131,7 +150,7 @@ PRIVATE METHODS
   private async parseBody(logger : Logger, req : http.IncomingMessage) {
     logger.debug('parseQuery')
 
-    const body : string = await this.getData(req)
+    const body : string = await streamToString(req)
 
     logger.debug('parseQuery body %s', body)
 
@@ -148,18 +167,16 @@ PRIVATE METHODS
         }
     }
   }
-  
-  private async getData(req : http.IncomingMessage) : Promise<string> {
-    return await new Promise((resolve, reject) => {
-      let data = ''
-      req.on('data', (chunk) => {
-        data += chunk.toString()
-      }).on('end', () => {
-        resolve(data)
-      }).on('error', (err) => {
-        reject(err)
-      })
-    })
+
+  private getRequestId(headers : http.IncomingHttpHeaders) {
+    this.logger.debug('getting request id.')
+
+    const requestId = headers[HTTP.HeaderKey.requestId]
+
+    if(Array.isArray(requestId)) return requestId[0].slice(0, 3)
+    else if(requestId)           return requestId.slice(0, 3)
+    else                         return this.getRandomRequestId()
+
   }
 
   private onError(err : any) {

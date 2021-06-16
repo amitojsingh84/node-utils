@@ -1,6 +1,6 @@
-import moment               from 'moment'
-import * as winston         from 'winston'
-import DailyRotateFile      from 'winston-daily-rotate-file'
+import moment          from 'moment'
+import * as winston    from 'winston'
+import DailyRotateFile from 'winston-daily-rotate-file'
 
 const DATE_TIME_FORMAT = 'HH:mm:ss.SSS DD-MM-YYYY',
       DATE_PATTERN     = 'DD-MM-YYYY',

@@ -2,7 +2,6 @@ import * as http   from 'http'
 import { Logger }  from './logger'
 import { HTTP }    from './http-constatnts'
 import { Errors }  from './errors'
-import { APError } from './ap-error'
 
 export type API = {
   fn        : (logger : Logger, params : any) => Promise<any>
@@ -19,6 +18,8 @@ export abstract class Router {
 
   private registry : Registry = []
 
+  abstract verifyApiRequest(headers : http.IncomingHttpHeaders, method : string, url : string) : Promise<any>
+
   public registerApi(logger    : Logger,
                      method    : string,
                      path      : string,
@@ -30,16 +31,23 @@ export abstract class Router {
     this.registry.push(api)
   }
 
-  public async verifyRequest(logger : Logger, method : string, path : string) : Promise<API> {
+  public async verifyRequest(logger  : Logger,
+                             headers : http.IncomingHttpHeaders,
+                             method  : string,
+                             path    : string,
+                             res     : http.ServerResponse) : Promise<API | undefined> {
     logger.debug('verifyRequest %s %s', method, path)
-
+    
     const api = this.registry.find((api : API) => api.method === method && api.path === path)
 
     logger.debug('Api %s %s', method, path)
-
+    
+    if(this.verifyApiRequest) await this.verifyApiRequest(headers, method, path)
+                            
     if(!api) {
       logger.debug('API not found %s', method)
-      throw new APError(Errors.name.NOT_FOUND, Errors.message.NOT_FOUND)
+      res.end(this.sendErrorResponse(res,[Errors.message.NOT_FOUND], HTTP.ErrorCode.NOT_FOUND, HTTP.HeaderValue.json))
+      return
     }
     
     return api
@@ -63,18 +71,8 @@ export abstract class Router {
     }
   }
 
-  public sendErrorResponse(res         : http.ServerResponse,
-                           errArr      : Array<string>,
-                           statusCode  : number,
-                           contentType : string) {
-    res.writeHead(statusCode, { [HTTP.HeaderKey.contentType] : contentType })
-    const data = {
-      error              : VALIDATION_ERROR,
-      [VALIDATION_ERROR] : errArr 
-    }
-
-    const resp = { data }
-    return JSON.stringify(resp)
+  public sendNotFoundResponse(res : http.ServerResponse, errArr : Array<string>) {
+    res.end(this.sendErrorResponse(res, errArr, HTTP.ErrorCode.NOT_FOUND, HTTP.HeaderValue.json))
   }
 
 /*------------------------------------------------------------------------------
@@ -86,6 +84,20 @@ PRIVATE METHODS
     const data = {
       success : OPERATION_SUCCESS,
       response
+    }
+
+    const resp = { data }
+    return JSON.stringify(resp)
+  }
+
+  private sendErrorResponse(res        : http.ServerResponse,
+                           errArr      : Array<string>,
+                           statusCode  : number,
+                           contentType : string) {
+    res.writeHead(statusCode, { [HTTP.HeaderKey.contentType] : contentType })
+    const data = {
+      error              : VALIDATION_ERROR,
+      [VALIDATION_ERROR] : errArr 
     }
 
     const resp = { data }
