@@ -51,7 +51,7 @@ export class Server {
   
   public stop() {
     this.logger.debug('server stopped.')
-    process.exit(1)
+    process.exit()
   }
 
 /*------------------------------------------------------------------------------
