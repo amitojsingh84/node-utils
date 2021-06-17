@@ -2,8 +2,8 @@ import * as stream from 'stream'
 
 /**
  * 
- * @param stream Readable stream | stream.Readable
- * @returns Readable stream converted into string | string
+ * @param stream Readable stream
+ * @returns Readable stream converted into string
  */
 export async function streamToString(stream : stream.Readable) : Promise<string> {
   return await new Promise((resolve, reject) => {

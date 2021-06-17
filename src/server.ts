@@ -1,15 +1,15 @@
-import * as http          from 'http'
-import * as https         from 'https'
-import * as fs            from 'fs'
-import * as lo            from 'lodash'
-import * as qs            from 'querystring'
-import * as url           from 'url'
 import { Router }         from './router'
 import { Logger }         from './logger'
 import { HTTP }           from './http-constatnts'
 import { Errors }         from './errors'
 import { APError }        from './ap-error'
 import { streamToString } from './utils'
+import * as http          from 'http'
+import * as https         from 'https'
+import * as fs            from 'fs'
+import * as lo            from 'lodash'
+import * as qs            from 'querystring'
+import * as url           from 'url'
 
 const UTF8 = 'utf8'
 
@@ -117,7 +117,7 @@ PRIVATE METHODS
           throw new APError(Errors.name.INVALID_METHOD, Errors.message.INVALID_METHOD)
       }
 
-      await this.router.callApi(requestLogger, api, params, res)
+      await this.router.invokeApi(requestLogger, api, params, res)
     } catch(err) {
       requestLogger.error('Some error occured')
     }
@@ -176,7 +176,6 @@ PRIVATE METHODS
     if(Array.isArray(requestId)) return requestId[0].slice(0, 3)
     else if(requestId)           return requestId.slice(0, 3)
     else                         return this.getRandomRequestId()
-
   }
 
   private onError(err : any) {

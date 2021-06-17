@@ -1,7 +1,7 @@
-import * as http   from 'http'
 import { Logger }  from './logger'
 import { HTTP }    from './http-constatnts'
 import { Errors }  from './errors'
+import * as http   from 'http'
 
 export type API = {
   fn        : (logger : Logger, params : any) => Promise<any>
@@ -18,7 +18,8 @@ export abstract class Router {
 
   private registry : Registry = []
 
-  abstract verifyApiRequest(headers : http.IncomingHttpHeaders, method : string, url : string) : Promise<any>
+  abstract verifyApiRequest(logger : Logger, headers : {[key : string] : Array<string> | string | undefined},
+                            method : string, url : string) : Promise<any>
 
   public registerApi(logger    : Logger,
                      method    : string,
@@ -32,7 +33,7 @@ export abstract class Router {
   }
 
   public async verifyRequest(logger  : Logger,
-                             headers : http.IncomingHttpHeaders,
+                             headers : http.IncomingHttpHeaders, // TODO : change type
                              method  : string,
                              path    : string,
                              res     : http.ServerResponse) : Promise<API | undefined> {
@@ -42,7 +43,7 @@ export abstract class Router {
 
     logger.debug('Api %s %s', method, path)
     
-    if(this.verifyApiRequest) await this.verifyApiRequest(headers, method, path)
+    if(this.verifyApiRequest) await this.verifyApiRequest(logger, headers, method, path)
                             
     if(!api) {
       logger.debug('API not found %s', method)
@@ -53,9 +54,9 @@ export abstract class Router {
     return api
   }
 
-  public async callApi(logger : Logger, api : API, params : any, res : http.ServerResponse) {
+  public async invokeApi(logger : Logger, api : API, params : any, res : http.ServerResponse) {
 
-    logger.debug('callApi %s %s', JSON.stringify(api), params)
+    logger.debug('invokeApi %s %s', JSON.stringify(api), params)
 
     try {
 
