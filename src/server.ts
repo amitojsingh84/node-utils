@@ -11,7 +11,8 @@ import * as lo            from 'lodash'
 import * as qs            from 'querystring'
 import * as url           from 'url'
 
-const UTF8 = 'utf8'
+const UTF8 = 'utf8',
+      DASH = '-'
 
 const PROTOCOLS = {
         HTTP  : 'http://',
@@ -50,6 +51,7 @@ export class Server {
   }
   
   public stop() {
+    this.server.close()
     this.logger.debug('server stopped.')
     process.exit()
   }
@@ -173,9 +175,25 @@ PRIVATE METHODS
 
     const requestId = headers[HTTP.HeaderKey.requestId]
 
-    if(Array.isArray(requestId)) return requestId[0].slice(0, 3)
-    else if(requestId)           return requestId.slice(0, 3)
-    else                         return this.getRandomRequestId()
+    if(Array.isArray(requestId)) {
+      return requestId[0].length >= 3 ? requestId[0].slice(0, 3) : this.requestId(requestId[0])
+    }
+    else if(requestId) {
+      return requestId.length >= 3 ? requestId.slice(0, 3) : this.requestId(requestId)
+    }
+    else {
+      return this.getRandomRequestId()
+    }
+  }
+
+  private requestId(requestId : string) : string {
+
+    switch(requestId.length) {
+      case 1  : return [DASH, DASH, requestId].join('')
+      case 2  : return [DASH, requestId].join('')
+      default : return requestId
+    }
+
   }
 
   private onError(err : any) {

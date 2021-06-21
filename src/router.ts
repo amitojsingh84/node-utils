@@ -10,6 +10,7 @@ export type API = {
   verifyFn ?: (logger : Logger, params : any) => Promise<any>
 }
 export type Registry = Array<API>
+export type Header = {[key : string] : Array<string> | string | undefined}
 
 const OPERATION_SUCCESS : string = 'OperationSuccess',
       VALIDATION_ERROR  : string = 'ValidationError'
@@ -18,7 +19,7 @@ export abstract class Router {
 
   private registry : Registry = []
 
-  abstract verifyApiRequest(logger : Logger, headers : {[key : string] : Array<string> | string | undefined},
+  abstract verifyApiRequest(logger : Logger, headers : Header,
                             method : string, url : string) : Promise<any>
 
   public registerApi(logger    : Logger,
@@ -33,7 +34,7 @@ export abstract class Router {
   }
 
   public async verifyRequest(logger  : Logger,
-                             headers : http.IncomingHttpHeaders, // TODO : change type
+                             headers : Header,
                              method  : string,
                              path    : string,
                              res     : http.ServerResponse) : Promise<API | undefined> {
