@@ -1,5 +1,5 @@
 import { Logger }  from './logger'
-import { HTTP }    from './http-constatnts'
+import { HTTP }    from './http-constants'
 import { Errors }  from './errors'
 import * as http   from 'http'
 
@@ -57,14 +57,14 @@ export abstract class Router {
 
   public async invokeApi(logger : Logger, api : API, params : any, res : http.ServerResponse) {
 
-    logger.debug('invokeApi %s %s', JSON.stringify(api), params)
+    logger.debug('invokeApi %s %s', JSON.stringify(api), JSON.stringify(params))
 
     try {
 
       if(api.verifyFn) await api.verifyFn(logger, params)
       
       const resp = await api.fn(logger, params)
-      logger.debug('Sending success response %s', resp)
+      logger.debug('Sending success response %s', JSON.stringify(resp))
 
       return res.end(this.sendSuccessResponse(res, resp, HTTP.ErrorCode.OK, HTTP.HeaderValue.json))
     } catch(err) {

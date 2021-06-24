@@ -1,6 +1,6 @@
 import { Router }         from './router'
 import { Logger }         from './logger'
-import { HTTP }           from './http-constatnts'
+import { HTTP }           from './http-constants'
 import { Errors }         from './errors'
 import { APError }        from './ap-error'
 import { streamToString } from './utils'
@@ -30,7 +30,7 @@ export class Server {
     
     this.router = router
     this.logger = logger
-    
+
     if(keyPath && certPath) {
       const key         = fs.readFileSync(keyPath, UTF8),
             cert        = fs.readFileSync(certPath, UTF8),
@@ -197,7 +197,7 @@ PRIVATE METHODS
   }
 
   private onError(err : any) {
-    this.logger.error('Error on server. %s', err)
+    console.error('Error on server. %s', err)
     process.exit(1)
   }
 

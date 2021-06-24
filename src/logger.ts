@@ -36,8 +36,20 @@ export class Logger {
     })
   }
 
-  public cloneLogger(requestId ?: string) : Logger {
-    return new Logger(this.logDir, this.logLevel, requestId)
+  public cloneLogger(requestId : string) : any {
+    
+    const newLogger : {[key: string] : any} = {}
+
+    for(var key in this) newLogger[key] = this[key]
+    
+    newLogger.requestId = requestId
+    newLogger.error = this.error
+    newLogger.debug = this.debug
+    newLogger.warn = this.warn
+    newLogger.info = this.info
+    newLogger.cloneLogger = this.cloneLogger
+    
+    return newLogger
   }
   
   public error(msg : string, ...args : Array<string | number | Error | undefined | null>) {
