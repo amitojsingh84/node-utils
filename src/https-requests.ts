@@ -11,8 +11,7 @@ import * as urlModule from 'url'
  * @param data JSON stringified data. Pass query params in url.
  */
 
-
-async function executeHttpsRequest(logger: Logger, urlObj : any, options : any, data : any) {
+async function executeHttpsRequest(logger: Logger, urlObj : any, options : any, data : string) {
   
   logger.debug('executeHttpsRequest request %s %s %s', JSON.stringify(urlObj), JSON.stringify(options), data)
 
@@ -32,7 +31,7 @@ async function executeHttpsRequest(logger: Logger, urlObj : any, options : any, 
 
     req.on('response', (res) => {
 
-      let body = ''
+      let body : string = ''
 
       res.on('data', (d) => {
         body = body + d
@@ -46,7 +45,7 @@ async function executeHttpsRequest(logger: Logger, urlObj : any, options : any, 
     req.end(data)
   })
 
-  const resp : any = await pr
+  const resp : string = await pr as string
   logger.debug('executeHttpsRequest response %s %s %s %s', JSON.stringify(urlObj), JSON.stringify(options), data, resp)
 
   return resp
