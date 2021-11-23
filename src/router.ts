@@ -67,9 +67,9 @@ export abstract class Router {
       logger.debug('Sending success response %s', JSON.stringify(resp))
 
       return res.end(this.sendSuccessResponse(res, resp, HTTP.ErrorCode.OK, HTTP.HeaderValue.json))
-    } catch(err) {
+    } catch(err : any) {
       logger.debug('Sending error response %s', err)
-      return res.end(this.sendErrorResponse(res, [err] as string[], HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json))
+      return res.end(this.sendErrorResponse(res, [err], HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json))
     }
   }
 
