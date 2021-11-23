@@ -69,7 +69,7 @@ export abstract class Router {
       return res.end(this.sendSuccessResponse(res, resp, HTTP.ErrorCode.OK, HTTP.HeaderValue.json))
     } catch(err) {
       logger.debug('Sending error response %s', err)
-      return res.end(this.sendErrorResponse(res, [err], HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json))
+      return res.end(this.sendErrorResponse(res, [err] as string[], HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json))
     }
   }
 
