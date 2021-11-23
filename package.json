@@ -19,6 +19,7 @@
     "cls-hooked": "^4.2.2",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
+    "nodemailer": "^6.7.1",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5",
     "xlsx": "^0.17.0"
