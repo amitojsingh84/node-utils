@@ -20,7 +20,7 @@ export abstract class Router {
   private registry : Registry = []
 
   abstract verifyApiRequest(logger : Logger, headers : Header,
-                            method : string, url : string) : Promise<any>
+                            method : string, url : string) : any
 
   public registerApi(logger    : Logger,
                      method    : string,
