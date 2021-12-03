@@ -41,7 +41,7 @@ export abstract class Router {
     logger.debug('verifyRequest %s %s', method, path)
     
     const api = this.registry.find((api : API) => api.method === method && api.path === path)
-
+    console.log(api, this.registry)
     logger.debug('Api %s %s', method, path)
     
     if(this.verifyApiRequest) await this.verifyApiRequest(logger, headers, method, path)
