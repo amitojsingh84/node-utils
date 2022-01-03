@@ -3,14 +3,12 @@ import * as http      from 'http'
 import * as https     from 'https'
 import * as urlModule from 'url'
 
-
 /**
  * Executes http(s) request.
  * @param urlObj url.URL object
  * @param options http(s).reqOptions object
  * @param data JSON stringified data. Pass query params in url.
  */
-
 async function executeHttpsRequest(logger: Logger, urlObj : any, options : any, data : string) {
   
   logger.debug('executeHttpsRequest request %s %s %s', JSON.stringify(urlObj), JSON.stringify(options), data)

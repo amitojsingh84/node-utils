@@ -43,22 +43,22 @@ export class Logger {
     return new Logger(this.logDir, this.logLevel, requestId, this.winstonLogger)
   }
   
-  public error(msg : string, ...args : Array<string | number | Error | undefined | null>) {
+  public error(msg : string, ...args : Array<string | number | Error | undefined | null | unknown>) {
     msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger?.error(msg, ...args)
   }
 
-  public warn(msg : string, ...args : Array<string | number | Error | undefined | null>) {
+  public warn(msg : string, ...args : Array<string | number | Error | undefined | null | unknown>) {
     msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger?.warn(msg, ...args)
   }
 
-  public info(msg : string, ...args : Array<string | number | Error | undefined | null>) {
+  public info(msg : string, ...args : Array<string | number | Error | undefined | null | unknown>) {
     msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger?.info(msg, ...args)
   }
 
-  public debug(msg : string, ...args : Array<string | number | Error | undefined | null>) {
+  public debug(msg : string, ...args : Array<string | number | Error | undefined | null | unknown>) {
     msg = `${moment().format(DATE_TIME_FORMAT)} ${this.requestId} ` + msg
     this.winstonLogger?.debug(msg, ...args)
   }

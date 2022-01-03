@@ -14,6 +14,7 @@ import * as url           from 'url'
 const UTF8 = 'utf8',
       DASH = '-'
 
+// TODO : move to constants
 const PROTOCOLS = {
         HTTP  : 'http://',
         HTTPS : 'https://'

@@ -1,6 +1,7 @@
 import { Logger }  from './logger'
 import { HTTP }    from './http-constants'
 import { Errors }  from './errors'
+import { APError } from './ap-error'
 import * as http   from 'http'
 
 export type API = {
@@ -10,7 +11,7 @@ export type API = {
   verifyFn ?: (logger : Logger, params : any) => Promise<any>
 }
 export type Registry = Array<API>
-export type Header = {[key : string] : Array<string> | string | undefined}
+export type Header   = {[key : string] : Array<string> | string | undefined}
 
 const OPERATION_SUCCESS : string = 'OperationSuccess',
       VALIDATION_ERROR  : string = 'ValidationError'
@@ -27,7 +28,8 @@ export abstract class Router {
                      path      : string,
                      fn        : (logger : Logger, params : any) => Promise<any>,
                      verifyFn ?: (logger : Logger, params : any) => Promise<any>) {
-    logger.debug('registerApi %s %s %s', method, path, JSON.stringify(fn))
+
+    logger.debug('registerApi %s %s', method, path)
     
     const api : API = { method, path, fn, verifyFn }
     this.registry.push(api)
@@ -38,6 +40,7 @@ export abstract class Router {
                              method  : string,
                              path    : string,
                              res     : http.ServerResponse) : Promise<API | undefined> {
+
     logger.debug('verifyRequest %s %s', method, path)
     
     const api = this.registry.find((api : API) => api.method === method && api.path === path)
@@ -67,9 +70,10 @@ export abstract class Router {
       logger.debug('Sending success response %s', JSON.stringify(resp))
 
       return res.end(this.sendSuccessResponse(res, resp, HTTP.ErrorCode.OK, HTTP.HeaderValue.json))
-    } catch(err : any) {
+    } catch(err) {
       logger.debug('Sending error response %s', err)
-      return res.end(this.sendErrorResponse(res, [err], HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json))
+      return res.end(this.sendErrorResponse(res, [(err as APError).message],
+                     HTTP.ErrorCode.BAD_REQUEST, HTTP.HeaderValue.json))
     }
   }
 
@@ -92,10 +96,11 @@ PRIVATE METHODS
     return JSON.stringify(resp)
   }
 
-  private sendErrorResponse(res        : http.ServerResponse,
-                           errArr      : Array<string>,
-                           statusCode  : number,
-                           contentType : string) {
+  private sendErrorResponse(res         : http.ServerResponse,
+                            errArr      : Array<string>,
+                            statusCode  : number,
+                            contentType : string) {
+
     res.writeHead(statusCode, { [HTTP.HeaderKey.contentType] : contentType })
     const data = {
       error              : VALIDATION_ERROR,

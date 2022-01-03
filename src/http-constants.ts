@@ -1,3 +1,4 @@
+// TODO : these should be enums
 export const HTTP = {
   HeaderKey   : {
     contentType : 'content-type',

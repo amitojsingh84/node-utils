@@ -1,3 +1,4 @@
+// TODO : enums
 export const Errors = {
   name : {
     INVALID_REQUEST                   : 'INVALID_REQUEST',
