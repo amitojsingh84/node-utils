@@ -23,13 +23,14 @@ export class RedisUtility {
     await this.client.connect()
   }
 
-  async addValues(key: any, value : any) {
-    await this.client.set(key, value)    
+  async addValues(key: string, value : string) {
+    await this.client.set(key, value) 
   }
 
-  async getValues(key : any) {
+  async getValues(key : string) {
     const value = await this.client.get(key)
     console.log(value)
-  }  
+
+  }
 }
 
