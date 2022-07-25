@@ -11,6 +11,9 @@ export const Errors = {
     EMAIL_SENDING_FAILURE             : 'EMAIL_SENDING_FAILURE',
     DB_NOT_INITIALIZED                : 'DB_NOT_INITIALIZED',
     DB_ERROR                          : 'DB_ERROR',
+    INVALID_PARAMS                    : 'INVALID_PARAMS',
+    FILE_STORAGE_ERROR                : 'FILE_STORAGE_ERROR',
+    
   },
 
   message : {
@@ -25,5 +28,8 @@ export const Errors = {
     DB_NOT_INITIALIZED                : 'DB is not initialized.',
     DB_ERROR                          : 'Error occurred in executing DB query.',
     DB_DOWN                           : 'DB is down.',
+    INVALID_PARAMS                    : 'INVALID_PARAMS',
+    FILE_STORAGE_ERROR                : 'Error occurred in file storage service.',
+    
   }
 }

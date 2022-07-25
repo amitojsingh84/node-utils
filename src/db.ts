@@ -9,14 +9,14 @@ const COMMA : string = ', '
 
 class DatabaseOperations {
 
-  logger = new Logger('./logs', 'debug')
-
+  logger     : Logger
   format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined) => string
   _init      : boolean
   _pool      : any
   DB_OFF     : boolean
   
   constructor(DB_HOST : string, DB_PORT : number, DB_USER : string, DB_PASSWORD : string, DB_NAME : string) {
+    this.logger      = new Logger('./logs', 'debug')
     this.format      = format
     this._init       = true
     this.DB_OFF      = false

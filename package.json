@@ -18,7 +18,7 @@
     "@types/redis": "^4.0.11",
     "@types/typescript": "^2.0.0",
     "@types/xlsx": "0.0.36",
-    "aws-sdk": "^2.914.0",
+    "aws-sdk": "^2.1181.0",
     "cls-hooked": "^4.2.2",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
