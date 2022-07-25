@@ -8,7 +8,9 @@ export const Errors = {
     RECIEVER_EMAILS_REQUIRED          : 'RECIEVER_EMAILS_REQUIRED',
     EMAIL_SUBJECT_REQUIRED            : 'EMAIL_SUBJECT_REQUIRED', 
     EMAIL_BODY_REQUIRED               : 'EMAIL_BODY_REQUIRED',    
-    EMAIL_SENDING_FAILURE             : 'EMAIL_SENDING_FAILURE'
+    EMAIL_SENDING_FAILURE             : 'EMAIL_SENDING_FAILURE',
+    DB_NOT_INITIALIZED                : 'DB_NOT_INITIALIZED',
+    DB_ERROR                          : 'DB_ERROR',
   },
 
   message : {
@@ -19,6 +21,9 @@ export const Errors = {
     RECIEVER_EMAILS_REQUIRED          : 'Reciever emails is required',
     EMAIL_SUBJECT_REQUIRED            : 'Email subject is required for email.',
     EMAIL_BODY_REQUIRED               : 'Email body is required for email.',
-    EMAIL_SENDING_FAILURE             : 'Error occur while sending email.'
+    EMAIL_SENDING_FAILURE             : 'Error occur while sending email.',
+    DB_NOT_INITIALIZED                : 'DB is not initialized.',
+    DB_ERROR                          : 'Error occurred in executing DB query.',
+    DB_DOWN                           : 'DB is down.',
   }
 }
