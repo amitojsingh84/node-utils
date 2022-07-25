@@ -47,7 +47,7 @@ class DatabaseOperations {
     return result
   }
 
-  async executeQuery(query : string) {
+  async executeQuery(query : string) : Promise<any[]> {
 
     if(this.DB_OFF) {
       this.logger.error('DB is down. %s', this.DB_OFF)
@@ -123,7 +123,7 @@ class DatabaseOperations {
     return clause
   }
 
-  async close() {
+  async close() : Promise<void>{
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')
