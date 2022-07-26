@@ -8,14 +8,24 @@ import { UtilFunctions } from './other-utils'
 const COMMA : string = ', '
 
 class DatabaseOperations {
-
+  
   logger     : Logger
   format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined) => string
   _init      : boolean
   _pool      : any
   DB_OFF     : boolean
   
-  constructor(DB_HOST : string, DB_PORT : number, DB_USER : string, DB_PASSWORD : string, DB_NAME : string) {
+  /**
+   * @param config 
+   *  
+      DB_HOST    : DB host 
+      DB_PORT    : DB port
+      DB_USER    : DB user name
+      DB_PASSWORD: DB password
+      DB_NAME    : DB name
+      
+   */
+  constructor(config: { DB_HOST: string; DB_PORT: number; DB_USER: string; DB_PASSWORD: string; DB_NAME: string }) {
     this.logger      = new Logger('./logs', 'debug')
     this.format      = format
     this._init       = true
@@ -24,11 +34,11 @@ class DatabaseOperations {
       connectionLimit : 50,
       connectTimeout  : 20000,
       acquireTimeout  : 20000,
-      host            : DB_HOST,
-      port            : DB_PORT,
-      user            : DB_USER,
-      password        : DB_PASSWORD,
-      database        : DB_NAME
+      host            : config.DB_HOST,
+      port            : config.DB_PORT,
+      user            : config.DB_USER,
+      password        : config.DB_PASSWORD,
+      database        : config.DB_NAME
     })
     
   }
