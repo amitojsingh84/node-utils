@@ -9,7 +9,7 @@ import * as urlModule from 'url'
  * @param options http(s).reqOptions object
  * @param data JSON stringified data. Pass query params in url.
  */
-async function executeHttpsRequest(logger: Logger, urlObj : any, options : any, data : string) {
+export async function executeHttpsRequest(logger: Logger, urlObj : any, options : any, data : string) {
   
   logger.debug('executeHttpsRequest request %s %s %s', JSON.stringify(urlObj), JSON.stringify(options), data)
 
@@ -49,4 +49,3 @@ async function executeHttpsRequest(logger: Logger, urlObj : any, options : any, 
   return resp
 }
 
-module.exports = executeHttpsRequest

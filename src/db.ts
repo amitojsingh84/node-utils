@@ -12,7 +12,7 @@ class DatabaseOperations {
   logger     : Logger
   format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined) => string
   _init      : boolean
-  _pool      : any
+  _pool      !: mysql.Pool
   DB_OFF     : boolean
   
   /**
@@ -29,21 +29,23 @@ class DatabaseOperations {
     this.logger      = new Logger('./logs', 'debug')
     this.format      = format
     this._init       = true
-    this.DB_OFF      = false
-    this._pool       = mysql.createPool({
-      connectionLimit : 50,
-      connectTimeout  : 20000,
-      acquireTimeout  : 20000,
-      host            : config.DB_HOST,
-      port            : config.DB_PORT,
-      user            : config.DB_USER,
-      password        : config.DB_PASSWORD,
-      database        : config.DB_NAME
-    })
+    this.DB_OFF      = false,
+    (async () => {
+      this._pool = await mysql.createPool({
+        connectionLimit : 50,
+        connectTimeout  : 20000,
+        acquireTimeout  : 20000,
+        host            : config.DB_HOST,
+        port            : config.DB_PORT,
+        user            : config.DB_USER,
+        password        : config.DB_PASSWORD,
+        database        : config.DB_NAME
+      })
+    })()
     
   }
 
-  
+    
   async executeEditQuery(type : string, query : string, tableName : string, userId : string) : Promise<any[]> {
 
     if(!this._init) {
@@ -146,7 +148,7 @@ class DatabaseOperations {
     const pool =  this._pool
     await pool.end()
 
-    this._pool = null
+    //this._pool = null
     this._init = false
   }
 }
