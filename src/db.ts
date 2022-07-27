@@ -111,7 +111,8 @@ class DatabaseOperations {
 
     this.logger.debug('addOrderClause. %s', JSON.stringify(orderByArr))
 
-    const orderByValues : string[] = orderByArr.map((value) => `${value.key}${value.order !== undefined ? ` ${value.order}` : ''}`),
+    const orderByValues : string[] = orderByArr.map((value) => `${value.key}${value.order !== undefined ?
+                                                                                             ` ${value.order}` : ''}`),
           clause        : string   = ` ORDER BY ` + orderByValues.join(COMMA)
 
     return clause
