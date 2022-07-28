@@ -1,17 +1,23 @@
-import { Logger } from './logger'
-import { APError } from './ap-error'
-import { Errors } from './errors'
-import nodemailer from 'nodemailer'
+import { Logger }      from './logger'
+import { APError }     from './ap-error'
+import { Errors }      from './errors'
+import   nodemailer    from 'nodemailer'
+import   SMTPTransport from 'nodemailer/lib/smtp-transport'
 
-class Mailer {
-  private _config: {service          : string,
-                    host             : string,
-                    port             : number,
-                    secureConnection : boolean,
-                    senderEmail      : string,
-                    senderPassword   : string}
-  private _transport
-  logger: Logger
+type Config = {
+  service          : string,
+  host             : string,
+  port             : number,
+  secureConnection : boolean,
+  senderEmail      : string,
+  senderPassword   : string
+}
+
+
+export class Mailer {
+  private _config    : Config 
+  private _transport : nodemailer.Transporter<SMTPTransport.SentMessageInfo>
+  private logger     : Logger
 
   /**
    * @param config 
@@ -22,9 +28,8 @@ class Mailer {
       senderEmail      : sender email
       senderPassword   : sender password
    */
-  constructor(config: {service : string, host : string, port : number, secureConnection : boolean, senderEmail : string,
-                       senderPassword : string}) {
-    this.logger = new Logger('./logs', 'debug')
+  constructor(config: Config) {
+    this.logger = new Logger('./logs', 'debug')//todo
     this._config = config
     this._transport = nodemailer.createTransport({
       host: this._config.service,
@@ -63,7 +68,7 @@ class Mailer {
       if (resp.rejected.length) throw 'Reason: ' + JSON.stringify(resp.rejected)
       this.logger.debug('Email resp?. %s', JSON.stringify(resp))
     } catch (e) {
-      this.logger.error('Error occured while sending email. %s', JSON.stringify(e))
+      this.logger.error('Error occurred while sending email. %s', JSON.stringify(e))
       throw new APError(Errors.name.EMAIL_SENDING_FAILURE, Errors.message.EMAIL_SENDING_FAILURE)
     }
   }
@@ -72,20 +77,26 @@ class Mailer {
     PRIVATE METHODS
   ------------------------------------------------------------------------------*/
 
+  //[{
+//     filename : FILE_NAME,
+//     content  : bufferData
+//  }],
+
+
   private _encodeEmail(emailTemplate: { id: string, templateName: string, subject: string, to: string[], cc: string[],
-    bcc: string[], status: string, from : string}, emailArr: string[], html: any, attachments: any[]) {
+    bcc: string[], status: string, from : string}, emailArr: string[], html: string, attachments: any[]) { //todo : type
     this.logger.debug('In _encodeEmail.%s %s %s', html, JSON.stringify(emailTemplate), JSON.stringify(emailArr))
 
-    const emailSubject : string     = emailTemplate.subject ?? null,
-      emailTo : string[]            = emailTemplate.to ?? [],
-      emails : string[]             = [...emailArr, ...emailTo],
-      uniqRecieverEmails : string[] = [...new Set(emails)],
-      emailCc : string[]            = emailTemplate.cc ?? [],
-      uniqCcEmails : string[]       = [...new Set(emailCc)],
-      emailBcc : string[]           = emailTemplate.bcc ?? [],
-      uniqBccEmails : string[]      = [...new Set(emailBcc)],
-      emailHtml : any               = html ?? null,
-      emailAttachments : any[]      = attachments || []
+    const emailSubject : string         = emailTemplate.subject ?? null,
+          emailTo : string[]            = emailTemplate.to ?? [],
+          emails : string[]             = [...emailArr, ...emailTo],
+          uniqRecieverEmails : string[] = [...new Set(emails)],
+          emailCc : string[]            = emailTemplate.cc ?? [],
+          uniqCcEmails : string[]       = [...new Set(emailCc)],
+          emailBcc : string[]           = emailTemplate.bcc ?? [],
+          uniqBccEmails : string[]      = [...new Set(emailBcc)],
+          emailHtml : any               = html ?? null,
+          emailAttachments : any[]      = attachments || []
 
     if (!uniqRecieverEmails || !uniqRecieverEmails.length) {
       this.logger.error('reciever emails required')

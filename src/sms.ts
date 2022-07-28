@@ -1,11 +1,30 @@
-import {Logger} from './logger'
-import {executeHttpsRequest} from './https-requests'
-import {HTTP} from './http-constants'
+import { Logger }              from './logger'
+import { executeHttpsRequest } from './https-requests'
+import { HTTP }                from './http-constants'
 
-class Sms {
+type UrlObj = {
+  method  ?: string
+  protocol : number
+  hostname : string
+  port     : number
+  pathname : string
+  query    : Query
+ }
+
+ type Query = {
+  username     : string
+  pass         : string
+  senderid     : string
+  msgtype      : string
+  response     : string
+  dest_mobileno: number
+  message      : string
+}
+
+export class Sms {
   
   _config: {PROTOCOL : number, HOST : string, PORT : number,PATH : string, USERNAME : string, PASSWORD : string,
-            SENDER_ID : any, MSG_TYPE : string, RESPONSE : any}
+            SENDER_ID : any, MSG_TYPE : string, RESPONSE : any} //type
 
   logger : Logger
   /**
@@ -33,21 +52,7 @@ class Sms {
   async sendSms(mobile : number, message : string) {
     this.logger.debug('sendSms %s %s', mobile, message)
 
-    const urlObj : {
-      method  ?: string
-      protocol : number;
-      hostname : string;
-      port     : number;
-      pathname : string;
-      query    : {
-          username     : string;
-          pass         : string;
-          senderid     : any;
-          msgtype      : string;
-          response     : any;
-          dest_mobileno: number;
-          message      : string;
-        } }  = {
+    const urlObj : UrlObj  = { //todo
                       protocol : this._config.PROTOCOL,
                       hostname : this._config.HOST,
                       port     : this._config.PORT,
@@ -69,7 +74,7 @@ class Sms {
     this.logger.debug('SMS request to be sent. %s %s %s %s', mobile, message,
                  JSON.stringify(urlObj), JSON.stringify(options))
     try {
-      await executeHttpsRequest(this.logger, urlObj, options, '')
+      await executeHttpsRequest(this.logger, urlObj, options, '') //make constant discuss
     } catch(e) {
       this.logger.warn('Error in sending sms to mobile. %s %s %s', mobile, message, e)
     }

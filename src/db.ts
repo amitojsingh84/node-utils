@@ -1,14 +1,15 @@
-import { format } from 'mysql'
-import mysql from 'promise-mysql'
-import { Logger } from './logger'
-import { APError } from './ap-error'
-import { Errors } from './errors'
+import { Logger }        from './logger'
+import { APError }       from './ap-error'
+import { Errors }        from './errors'
 import { UtilFunctions } from './other-utils'
+import { format }        from 'mysql'
+import   mysql           from 'promise-mysql'
 
 const COMMA : string = ', '
 
-class DatabaseOperations {
+export class DatabaseOperations {
   
+  //private
   logger     : Logger
   format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined) => string
   _init      : boolean
@@ -25,12 +26,15 @@ class DatabaseOperations {
       DB_NAME    : DB name
       
    */
-  constructor(config: { DB_HOST: string; DB_PORT: number; DB_USER: string; DB_PASSWORD: string; DB_NAME: string }) {
+
+  
+
+  constructor(config: { DB_HOST: string; DB_PORT: number; DB_USER: string; DB_PASSWORD: string; DB_NAME: string }) { //todo
     this.logger      = new Logger('./logs', 'debug')
     this.format      = format
     this._init       = true
     this.DB_OFF      = false,
-    (async () => {
+    (async () => { //TODO DISCUSS
       this._pool = await mysql.createPool({
         connectionLimit : 50,
         connectTimeout  : 20000,
@@ -44,7 +48,6 @@ class DatabaseOperations {
     })()
     
   }
-
     
   async executeEditQuery(type : string, query : string, tableName : string, userId : string) : Promise<any[]> {
 
@@ -54,12 +57,12 @@ class DatabaseOperations {
     }
 
     this.logger.info('executeEditQuery %s %s %s %s', type, UtilFunctions.getQueryLogStr(query), tableName, userId)
-    const result : any[] = await this.executeQuery(query)
+    const result : Object[] = await this.executeQuery(query)
 
     return result
   }
 
-  async executeQuery(query : string) : Promise<any[]> {
+  async executeQuery(query : string) : Promise<Object[]> {
 
     if(this.DB_OFF) {
       this.logger.error('DB is down. %s', this.DB_OFF)
@@ -72,7 +75,7 @@ class DatabaseOperations {
     }
 
     try {
-      const result : any[] = await this._pool.query(query)
+      const result : Object[] = await this._pool.query(query)
 
       this.logger.debug('executeQuery %s %s', UtilFunctions.getQueryLogStr(query), JSON.stringify(result))           
 
@@ -83,7 +86,7 @@ class DatabaseOperations {
     }
   }
 
-  addQueryClause(params : any[], key : string, value : string, operator : string) : string{
+  addQueryClause(params : (string | number)[], key : string, value : string, operator : string) : string {
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')
@@ -99,6 +102,10 @@ class DatabaseOperations {
     
     return ` AND ${key} ${operator}`
   }
+
+  // {key   : string | ,
+  // order : DB_CONSTANTS.Orders.DESC }
+
 
   addOrderClause(orderByArr : any[]) : string | undefined {
 
@@ -118,7 +125,7 @@ class DatabaseOperations {
     return clause
   }
 
-  addLimitClause(params : any[], startIndex : number, pageSize : number) : string{
+  addLimitClause(params : any[], startIndex : number, pageSize : number) : string { //todo
     
     if(!this._init) {
       this.logger.error('DB is not initialized.')
@@ -136,7 +143,7 @@ class DatabaseOperations {
     return clause
   }
 
-  async close() : Promise<void>{
+  async close() : Promise<void> {
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')

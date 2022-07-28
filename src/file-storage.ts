@@ -1,27 +1,25 @@
-import { Logger } from './logger'
+import { Logger }  from './logger'
 import { APError } from './ap-error'
-import * as AWS from 'aws-sdk'
+import { Errors }  from './errors'
+import * as AWS    from 'aws-sdk'
 import * as stream from 'stream'
-import { Errors } from './errors'
 
-const PRIVATE: string = 'private',
-  PUBLIC_READ: string = 'public-read',
-  STRING_TYPE: string = 'string',
-  BOOLEAN_TYPE: string = 'boolean'
+const PRIVATE      : string = 'private',
+      PUBLIC_READ  : string = 'public-read'
 
-class FileStorageOperations {
+export class FileStorageOperations {
 
-  _s3: AWS.S3
-  logger: Logger
-  ACCOUNT_ID: string
+  private _s3        : AWS.S3
+  private logger     : Logger
+  private ACCOUNT_ID :  string //Todo
 
-  constructor(ACCESS_KEY_ID: string, SECRET_ACCESS_KEY: string, ACCOUNT_ID: string) {
+  constructor(ACCESS_KEY_ID: string, SECRET_ACCESS_KEY: string, ACCOUNT_ID: string) { //todo: change const name
     this._s3 = new AWS.S3({
       accessKeyId: ACCESS_KEY_ID,
       secretAccessKey: SECRET_ACCESS_KEY
     })
-    this.logger = new Logger('./logs', 'debug')
-    this.ACCOUNT_ID = ACCOUNT_ID
+    this.logger = new Logger('./logs', 'debug') //todo pass logger value
+    this.ACCOUNT_ID = ACCOUNT_ID//todo
   }
 
   /**
@@ -29,13 +27,15 @@ class FileStorageOperations {
    * @param bucket bucket name string 
    * @returns list of files in bucket Array<string>
    */
-  async getFileList(bucket: string) {
+  public async getFileList(bucket: string) {
     this.logger.debug('Getting file list. %s', bucket)
 
     const params: Object = {
       Bucket: bucket,
       ExpectedBucketOwner: this.ACCOUNT_ID
     }
+
+    //todo
   }
 
   /**
@@ -44,7 +44,7 @@ class FileStorageOperations {
    * @param filePath path of file string
    * @returns data of file from bucket Buffer
    */
-  async getFile(bucket: string, filePath: string) {
+  public async getFile(bucket: string, filePath: string) {
 
     this.logger.debug('Fetching file. %s %s', bucket, filePath)
 
@@ -60,7 +60,7 @@ class FileStorageOperations {
       return fileData
 
     } catch (err) {
-      this.logger.error('Error in getting data from file in storage service. %s %s', bucket, filePath, err)
+      this.logger.error('Error in getting data from file in storage service. %s %s %s', bucket, filePath, err)
       throw new APError(Errors.name.FILE_STORAGE_ERROR, Errors.message.FILE_STORAGE_ERROR)
     }
   }
@@ -73,17 +73,17 @@ class FileStorageOperations {
    * @param isPublic access permission for file boolean
    * @returns file url of file in bucket string
    */
-  async uploadFile(bucket: string, filePath: string, data: stream.Readable | Buffer, isPublic: boolean) {
+   public async uploadFile(bucket: string, filePath: string, data: stream.Readable | Buffer, isPublic: boolean) {
 
     if (!isPublic) {
-      this.logger.debug('Invalid params for uploadFile. %s %s %s', bucket, filePath, isPublic)
+      this.logger.error('Invalid params for uploadFile. %s %s %s', bucket, filePath, isPublic)
       throw new APError(Errors.name.INVALID_PARAMS, Errors.name.INVALID_PARAMS)
     }
 
     this.logger.debug('Uploading file. %s %s %s', bucket, filePath, isPublic)
 
     const params: AWS.S3.PutObjectRequest = {
-      Bucket  : bucket,
+      Bucket : bucket,
       Key    : filePath,
       Body   : data,
       ACL    : isPublic ? PUBLIC_READ : PRIVATE
@@ -106,13 +106,13 @@ class FileStorageOperations {
    * @param bucket bucket name string
    * @param filePath path of file string
    */
-  async deleteFile(bucket: string, filePath: string) {
+  public async deleteFile(bucket: string, filePath: string) {
 
     this.logger.debug('Deleting file. %s %s', bucket, filePath)
 
-    const params: AWS.S3.DeleteObjectRequest = {
-      Bucket: bucket,
-      Key: filePath
+    const params : AWS.S3.DeleteObjectRequest = {
+      Bucket : bucket,
+      Key    : filePath
     }
 
     try {
@@ -125,14 +125,14 @@ class FileStorageOperations {
     }
   }
 
-  async readFile(bucket: string, filePath: string) {
+  public async readFile(bucket: string, filePath: string) {
     this.logger.debug('readFile. %s %s', bucket, filePath)
 
     this.logger.debug('Fetching file. %s %s', bucket, filePath)
 
     const params: AWS.S3.GetObjectRequest = {
-      Bucket: bucket,
-      Key: filePath
+      Bucket : bucket,
+      Key    : filePath
     }
 
     try {
@@ -155,17 +155,17 @@ class FileStorageOperations {
     Private Methods
   ------------------------------------------------------------------------------*/
 
-  async _getFileListFromStorage(params: AWS.S3.ListObjectsRequest) {
+  async _getFileListFromStorage(params: AWS.S3.ListObjectsRequest) { // todo: private f
 
     const data: AWS.S3.ListObjectsOutput = await new Promise((resolve, reject) => {
       this._s3.listObjects(params, (err, data) => {
         if (err) reject(err)
-        else resolve(data)
+        else     resolve(data)
       })
     })
-    // have to make any type becoz it can be undefined too
-    const contents : any = data.Contents,
-          files    : any = contents.map((content: any) => content.Key)
+
+    const contents : AWS.S3.ObjectList | undefined  = data.Contents,
+          files    : String[]                       = contents ? contents.map((content: any) => content.Key) : []
 
     return files
   }
@@ -174,7 +174,7 @@ class FileStorageOperations {
     return await new Promise((resolve, reject) => {
       this._s3.getObject(params, (err, data) => {
         if (err) reject(err)
-        else resolve(data.Body)
+        else     resolve(data.Body)
       })
     })
   }
@@ -183,7 +183,7 @@ class FileStorageOperations {
     return await new Promise((resolve, reject) => {
       this._s3.upload(params, (err, data) => {
         if (err) reject(err)
-        else resolve(data.Location)
+        else     resolve(data.Location)
       })
     })
   }
@@ -192,7 +192,7 @@ class FileStorageOperations {
     return await new Promise((resolve, reject) => {
       this._s3.deleteObject(params, (err, data) => {
         if (err) reject(err)
-        else resolve(data)
+        else     resolve(data)
       })
     })
   }
