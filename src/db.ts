@@ -7,14 +7,20 @@ import   mysql           from 'promise-mysql'
 
 const COMMA : string = ', '
 
+type Config = { 
+      DB_HOST    : string
+      DB_PORT    : number
+      DB_USER    : string
+      DB_PASSWORD: string
+      DB_NAME    : string }
+
 export class DatabaseOperations {
   
-  //private
-  logger     : Logger
-  format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined) => string
-  _init      : boolean
-  _pool      !: mysql.Pool
-  DB_OFF     : boolean
+  private logger     : Logger
+  private format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined) => string
+  private _init      : boolean
+  private _pool     !: mysql.Pool
+  private DB_OFF     : boolean
   
   /**
    * @param config 
@@ -29,12 +35,12 @@ export class DatabaseOperations {
 
   
 
-  constructor(config: { DB_HOST: string; DB_PORT: number; DB_USER: string; DB_PASSWORD: string; DB_NAME: string }) { //todo
+  constructor(config: Config) { 
     this.logger      = new Logger('./logs', 'debug')
     this.format      = format
     this._init       = true
     this.DB_OFF      = false,
-    (async () => { //TODO DISCUSS
+    (async () => { 
       this._pool = await mysql.createPool({
         connectionLimit : 50,
         connectTimeout  : 20000,
@@ -49,7 +55,7 @@ export class DatabaseOperations {
     
   }
     
-  async executeEditQuery(type : string, query : string, tableName : string, userId : string) : Promise<any[]> {
+  public async executeEditQuery(type : string, query : string, tableName : string, userId : string) : Promise<any[]> {
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')
@@ -62,7 +68,7 @@ export class DatabaseOperations {
     return result
   }
 
-  async executeQuery(query : string) : Promise<Object[]> {
+  public async executeQuery(query : string) : Promise<Object[]> {
 
     if(this.DB_OFF) {
       this.logger.error('DB is down. %s', this.DB_OFF)
@@ -86,7 +92,7 @@ export class DatabaseOperations {
     }
   }
 
-  addQueryClause(params : (string | number)[], key : string, value : string, operator : string) : string {
+  public addQueryClause(params : (string | number)[], key : string, value : string, operator : string) : string {
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')
@@ -103,11 +109,8 @@ export class DatabaseOperations {
     return ` AND ${key} ${operator}`
   }
 
-  // {key   : string | ,
-  // order : DB_CONSTANTS.Orders.DESC }
 
-
-  addOrderClause(orderByArr : any[]) : string | undefined {
+  public addOrderClause(orderByArr : any[]) : string | undefined {
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')
@@ -125,7 +128,7 @@ export class DatabaseOperations {
     return clause
   }
 
-  addLimitClause(params : any[], startIndex : number, pageSize : number) : string { //todo
+  public addLimitClause(params : any[], startIndex : number, pageSize : number) : string { 
     
     if(!this._init) {
       this.logger.error('DB is not initialized.')
@@ -143,7 +146,7 @@ export class DatabaseOperations {
     return clause
   }
 
-  async close() : Promise<void> {
+  public async close() : Promise<void> {
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')

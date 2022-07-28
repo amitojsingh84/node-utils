@@ -3,23 +3,32 @@ import { APError } from './ap-error'
 import { Errors }  from './errors'
 import * as AWS    from 'aws-sdk'
 import * as stream from 'stream'
+import { readConfigFile } from 'typescript'
 
 const PRIVATE      : string = 'private',
       PUBLIC_READ  : string = 'public-read'
+
+type Config = {
+  access_key_id      : string,
+  secret_access_key  : string,
+  account_id         : string
+}      
 
 export class FileStorageOperations {
 
   private _s3        : AWS.S3
   private logger     : Logger
-  private ACCOUNT_ID :  string //Todo
+  private account_id : string 
+  private config     : Config
 
-  constructor(ACCESS_KEY_ID: string, SECRET_ACCESS_KEY: string, ACCOUNT_ID: string) { //todo: change const name
+  constructor(config : Config, logger : Logger) { 
     this._s3 = new AWS.S3({
-      accessKeyId: ACCESS_KEY_ID,
-      secretAccessKey: SECRET_ACCESS_KEY
+      accessKeyId    : config.access_key_id,
+      secretAccessKey: config.secret_access_key
     })
-    this.logger = new Logger('./logs', 'debug') //todo pass logger value
-    this.ACCOUNT_ID = ACCOUNT_ID//todo
+    this.logger = logger
+    this.account_id = config.account_id
+    this.config = config
   }
 
   /**
@@ -28,14 +37,25 @@ export class FileStorageOperations {
    * @returns list of files in bucket Array<string>
    */
   public async getFileList(bucket: string) {
+    
     this.logger.debug('Getting file list. %s', bucket)
 
-    const params: Object = {
+    const params: AWS.S3.ListObjectsRequest = {
       Bucket: bucket,
-      ExpectedBucketOwner: this.ACCOUNT_ID
+      ExpectedBucketOwner: this.config.account_id
     }
+    
+    try {
+      const listOfFiles = await this._getFileListFromStorage(params)
 
-    //todo
+      this.logger.debug('File list. %s %s', bucket, JSON.stringify(listOfFiles))
+      return listOfFiles
+
+    } catch(err) {
+      this.logger.debug('Error in getting file list from storage service. %s %s', bucket, err)
+      throw new APError(Errors.name.FILE_STORAGE_ERROR, Errors.message.FILE_STORAGE_ERROR)
+    }
+    
   }
 
   /**
@@ -155,7 +175,7 @@ export class FileStorageOperations {
     Private Methods
   ------------------------------------------------------------------------------*/
 
-  async _getFileListFromStorage(params: AWS.S3.ListObjectsRequest) { // todo: private f
+  private async _getFileListFromStorage(params: AWS.S3.ListObjectsRequest) { 
 
     const data: AWS.S3.ListObjectsOutput = await new Promise((resolve, reject) => {
       this._s3.listObjects(params, (err, data) => {
@@ -170,7 +190,7 @@ export class FileStorageOperations {
     return files
   }
 
-  async _getFileFromStorage(params: AWS.S3.GetObjectRequest) {
+  private async _getFileFromStorage(params: AWS.S3.GetObjectRequest) {
     return await new Promise((resolve, reject) => {
       this._s3.getObject(params, (err, data) => {
         if (err) reject(err)
@@ -179,7 +199,7 @@ export class FileStorageOperations {
     })
   }
 
-  async _uploadToStorage(params: AWS.S3.PutObjectRequest) {
+  private async _uploadToStorage(params: AWS.S3.PutObjectRequest) {
     return await new Promise((resolve, reject) => {
       this._s3.upload(params, (err, data) => {
         if (err) reject(err)
@@ -188,7 +208,7 @@ export class FileStorageOperations {
     })
   }
 
-  async _deleteFileFromStorage(params: AWS.S3.DeleteObjectRequest) {
+  private async _deleteFileFromStorage(params: AWS.S3.DeleteObjectRequest) {
     return await new Promise((resolve, reject) => {
       this._s3.deleteObject(params, (err, data) => {
         if (err) reject(err)
@@ -197,7 +217,7 @@ export class FileStorageOperations {
     })
   }
 
-  async _readFileFromStorageUsingStreams(params: AWS.S3.GetObjectRequest): Promise<stream.Readable> {
+  private async _readFileFromStorageUsingStreams(params: AWS.S3.GetObjectRequest) {
     this.logger.debug('In _readFileFromStorageUsingStreams %s', JSON.stringify(params))
 
     const stream: stream.Readable = this._s3.getObject(params).createReadStream()

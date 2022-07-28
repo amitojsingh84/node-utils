@@ -20,7 +20,15 @@ type UrlObj = {
   dest_mobileno: number
   message      : string
 }
-
+type Config = {PROTOCOL: number,
+               HOST     : string,
+               PORT     : number,
+               PATH     : string,
+               USERNAME : string,
+               PASSWORD : string,
+               SENDER_ID: any, 
+               MSG_TYPE : string,
+               RESPONSE : any}
 export class Sms {
   
   _config: {PROTOCOL : number, HOST : string, PORT : number,PATH : string, USERNAME : string, PASSWORD : string,
@@ -40,9 +48,7 @@ export class Sms {
       RESPONSE  : sms provider response
    */
   
-  constructor(config: {PROTOCOL : number, HOST : string, PORT : number,
-     PATH : string, USERNAME : string, PASSWORD : string, SENDER_ID : any, 
-     MSG_TYPE : string, RESPONSE : any}) {
+  constructor(config: Config) {
 
     this._config = config
     this.logger  = new Logger('./logs', 'debug')
@@ -52,7 +58,7 @@ export class Sms {
   async sendSms(mobile : number, message : string) {
     this.logger.debug('sendSms %s %s', mobile, message)
 
-    const urlObj : UrlObj  = { //todo
+    const urlObj : UrlObj  = { 
                       protocol : this._config.PROTOCOL,
                       hostname : this._config.HOST,
                       port     : this._config.PORT,

@@ -13,6 +13,20 @@ type Config = {
   senderPassword   : string
 }
 
+type Attachment = [{
+  filename : string,
+  content  : Buffer
+}]
+
+type emailTemplate = { 
+   id          : string,
+   templateName: string,
+   subject     : string,
+   to          : string[], 
+   cc          : string[],
+   bcc         : string[],
+   status      : string,
+   from        : string }
 
 export class Mailer {
   private _config    : Config 
@@ -28,17 +42,17 @@ export class Mailer {
       senderEmail      : sender email
       senderPassword   : sender password
    */
-  constructor(config: Config) {
-    this.logger = new Logger('./logs', 'debug')//todo
+  constructor(config: Config, logger : Logger) {
+    this.logger = logger
     this._config = config
     this._transport = nodemailer.createTransport({
-      host: this._config.service,
-      port: this._config.port,
-      secure: this._config.secureConnection,
+      host      : this._config.service,
+      port      : this._config.port,
+      secure    : this._config.secureConnection,
       requireTLS: true,
-      auth: {
-        user: this._config.senderEmail,
-        pass: this._config.senderPassword
+      auth      : {
+        user    : this._config.senderEmail,
+        pass    : this._config.senderPassword
       }
     })
   }
@@ -55,8 +69,7 @@ export class Mailer {
    * @param html - html content for email
    * @param attachments - Array of files
    */
-  async constructAndSendEmail(emailTemplate: { id: string, templateName: string, subject: string, to: string[], 
-    cc: string[], bcc: string[], status: string, from : string}, emailArr: string[], html: any, attachments: any[]) {
+  public async constructAndSendEmail(emailTemplate: emailTemplate, emailArr: string[], html: any, attachments: Attachment) {
     this.logger.debug('In constructAndSendEmail.%s %s %s', html, JSON.stringify(emailTemplate), JSON.stringify(emailArr))
 
     const { mailOptions, emailAttachments } = this._encodeEmail(emailTemplate, emailArr, html, attachments)
@@ -77,14 +90,8 @@ export class Mailer {
     PRIVATE METHODS
   ------------------------------------------------------------------------------*/
 
-  //[{
-//     filename : FILE_NAME,
-//     content  : bufferData
-//  }],
-
-
-  private _encodeEmail(emailTemplate: { id: string, templateName: string, subject: string, to: string[], cc: string[],
-    bcc: string[], status: string, from : string}, emailArr: string[], html: string, attachments: any[]) { //todo : type
+  
+  private _encodeEmail(emailTemplate: emailTemplate, emailArr: string[], html: string, attachments : Attachment) { 
     this.logger.debug('In _encodeEmail.%s %s %s', html, JSON.stringify(emailTemplate), JSON.stringify(emailArr))
 
     const emailSubject : string         = emailTemplate.subject ?? null,
