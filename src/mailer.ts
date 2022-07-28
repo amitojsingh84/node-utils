@@ -1,13 +1,18 @@
-import {Logger} from './logger'
-import {APError} from './ap-error'
-import {Errors} from './errors'
+import { Logger } from './logger'
+import { APError } from './ap-error'
+import { Errors } from './errors'
 import nodemailer from 'nodemailer'
 
 class Mailer {
-  private _config: any
+  private _config: {service          : string,
+                    host             : string,
+                    port             : number,
+                    secureConnection : boolean,
+                    senderEmail      : string,
+                    senderPassword   : string}
   private _transport
-  logger : Logger
-  
+  logger: Logger
+
   /**
    * @param config 
    *  service          : smtp service like gmail, hotmail etc
@@ -17,21 +22,22 @@ class Mailer {
       senderEmail      : sender email
       senderPassword   : sender password
    */
-  constructor(config: any) {
-    this.logger     = new Logger('./logs', 'debug')
-    this._config    = config
+  constructor(config: {service : string, host : string, port : number, secureConnection : boolean, senderEmail : string,
+                       senderPassword : string}) {
+    this.logger = new Logger('./logs', 'debug')
+    this._config = config
     this._transport = nodemailer.createTransport({
-      host      : this._config.service,
-      port      : this._config.port,
-      secure    : this._config.secureConnection,
+      host: this._config.service,
+      port: this._config.port,
+      secure: this._config.secureConnection,
       requireTLS: true,
       auth: {
-        user : this._config.senderEmail,
-        pass : this._config.senderPassword
+        user: this._config.senderEmail,
+        pass: this._config.senderPassword
       }
     })
   }
-  
+
   /**
    * Construct Email from the data provided and send it.
    * @param emailTemplate - object consists of data like 
@@ -44,24 +50,69 @@ class Mailer {
    * @param html - html content for email
    * @param attachments - Array of files
    */
-   async constructAndSendEmail(emailTemplate: any, emailArr: any, html: unknown, attachments: any) {
+  async constructAndSendEmail(emailTemplate: { id: string, templateName: string, subject: string, to: string[], 
+    cc: string[], bcc: string[], status: string, from : string}, emailArr: string[], html: any, attachments: any[]) {
     this.logger.debug('In constructAndSendEmail.%s %s %s', html, JSON.stringify(emailTemplate), JSON.stringify(emailArr))
 
-    const { mailOptions, emailAttachments } = this._encodeEmail(emailTemplate, emailArr, html, attachments)    
+    const { mailOptions, emailAttachments } = this._encodeEmail(emailTemplate, emailArr, html, attachments)
     this.logger.debug('mailoptions are. %s', JSON.stringify(mailOptions))
     mailOptions.attachments = emailAttachments
 
     try {
       const resp = await this._transport.sendMail(mailOptions)
-      if(resp.rejected.length) throw 'Reason: ' + JSON.stringify(resp.rejected)
+      if (resp.rejected.length) throw 'Reason: ' + JSON.stringify(resp.rejected)
       this.logger.debug('Email resp?. %s', JSON.stringify(resp))
-    } catch(e) {
+    } catch (e) {
       this.logger.error('Error occured while sending email. %s', JSON.stringify(e))
-      throw new APError(Errors.name.EMAIL_SENDING_FAILURE, Errors.message.EMAIL_SENDING_FAILURE)       
+      throw new APError(Errors.name.EMAIL_SENDING_FAILURE, Errors.message.EMAIL_SENDING_FAILURE)
     }
   }
-  private _encodeEmail(emailTemplate: any, emailArr: any, html: unknown, attachments: any): { mailOptions: any; emailAttachments: any } {
-    throw new Error('Method not implemented.')
+
+  /*------------------------------------------------------------------------------
+    PRIVATE METHODS
+  ------------------------------------------------------------------------------*/
+
+  private _encodeEmail(emailTemplate: { id: string, templateName: string, subject: string, to: string[], cc: string[],
+    bcc: string[], status: string, from : string}, emailArr: string[], html: any, attachments: any[]) {
+    this.logger.debug('In _encodeEmail.%s %s %s', html, JSON.stringify(emailTemplate), JSON.stringify(emailArr))
+
+    const emailSubject : string     = emailTemplate.subject ?? null,
+      emailTo : string[]            = emailTemplate.to ?? [],
+      emails : string[]             = [...emailArr, ...emailTo],
+      uniqRecieverEmails : string[] = [...new Set(emails)],
+      emailCc : string[]            = emailTemplate.cc ?? [],
+      uniqCcEmails : string[]       = [...new Set(emailCc)],
+      emailBcc : string[]           = emailTemplate.bcc ?? [],
+      uniqBccEmails : string[]      = [...new Set(emailBcc)],
+      emailHtml : any               = html ?? null,
+      emailAttachments : any[]      = attachments || []
+
+    if (!uniqRecieverEmails || !uniqRecieverEmails.length) {
+      this.logger.error('reciever emails required')
+      throw new APError(Errors.name.RECIEVER_EMAILS_REQUIRED, Errors.message.RECIEVER_EMAILS_REQUIRED)
+    }
+
+    if (!emailSubject) {
+      this.logger.error('Email subject required')
+      throw new APError(Errors.name.EMAIL_SUBJECT_REQUIRED, Errors.message.EMAIL_SUBJECT_REQUIRED)
+    }
+
+    if (emailHtml === undefined || emailHtml == null) {
+      this.logger.error('Email html template required')
+      throw new APError(Errors.name.EMAIL_BODY_REQUIRED, Errors.message.EMAIL_BODY_REQUIRED)
+    }
+
+    const mailOptions = {
+      to          : uniqRecieverEmails,
+      from        : this._config.senderEmail,
+      subject     : emailSubject,
+      bcc         : uniqBccEmails,
+      cc          : uniqCcEmails,
+      html        : emailHtml,
+      attachments : emailAttachments
+    }
+
+    return { mailOptions, emailAttachments }
   }
 
 }

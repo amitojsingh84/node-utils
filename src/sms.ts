@@ -34,19 +34,19 @@ class Sms {
     this.logger.debug('sendSms %s %s', mobile, message)
 
     const urlObj : {
-      method ?: string
-      protocol: number;
-      hostname: string;
-      port: number;
-      pathname: string;
-      query: {
-          username: string;
-          pass: string;
-          senderid: any;
-          msgtype: string;
-          response: any;
+      method  ?: string
+      protocol : number;
+      hostname : string;
+      port     : number;
+      pathname : string;
+      query    : {
+          username     : string;
+          pass         : string;
+          senderid     : any;
+          msgtype      : string;
+          response     : any;
           dest_mobileno: number;
-          message: string;
+          message      : string;
         } }  = {
                       protocol : this._config.PROTOCOL,
                       hostname : this._config.HOST,

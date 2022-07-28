@@ -29,12 +29,7 @@ class FileStorageOperations {
    * @param bucket bucket name string 
    * @returns list of files in bucket Array<string>
    */
-  async getFileList(bucket: any | undefined) {
-    if (!bucket || typeof bucket !== STRING_TYPE) {
-      this.logger.debug('Invalid or missing params for getFileList. %s', bucket)
-      throw new APError(Errors.name.INVALID_PARAMS, Errors.name.INVALID_PARAMS)
-    }
-
+  async getFileList(bucket: string) {
     this.logger.debug('Getting file list. %s', bucket)
 
     const params: Object = {
@@ -88,10 +83,10 @@ class FileStorageOperations {
     this.logger.debug('Uploading file. %s %s %s', bucket, filePath, isPublic)
 
     const params: AWS.S3.PutObjectRequest = {
-      Bucket: bucket,
-      Key: filePath,
-      Body: data,
-      ACL: isPublic ? PUBLIC_READ : PRIVATE
+      Bucket  : bucket,
+      Key    : filePath,
+      Body   : data,
+      ACL    : isPublic ? PUBLIC_READ : PRIVATE
     }
 
     try {
@@ -169,8 +164,8 @@ class FileStorageOperations {
       })
     })
     // have to make any type becoz it can be undefined too
-    const contents: any = data.Contents,
-      files = contents.map((content: any) => content.Key)
+    const contents : any = data.Contents,
+          files    : any = contents.map((content: any) => content.Key)
 
     return files
   }
@@ -217,6 +212,5 @@ class FileStorageOperations {
 
     return stream
   }
-
 
 }      
