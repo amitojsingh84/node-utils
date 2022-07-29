@@ -12,7 +12,8 @@ type Config = {
       DB_PORT    : number
       DB_USER    : string
       DB_PASSWORD: string
-      DB_NAME    : string }
+      DB_NAME    : string 
+    }
 
 export class DatabaseOperations {
   
@@ -55,7 +56,7 @@ export class DatabaseOperations {
     
   }
     
-  public async executeEditQuery(type : string, query : string, tableName : string, userId : string) : Promise<any[]> {
+  public async executeEditQuery(type : string, query : string, tableName : string, userId : string) {
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')
@@ -68,7 +69,7 @@ export class DatabaseOperations {
     return result
   }
 
-  public async executeQuery(query : string) : Promise<Object[]> {
+  public async executeQuery(query : string) {
 
     if(this.DB_OFF) {
       this.logger.error('DB is down. %s', this.DB_OFF)
@@ -159,7 +160,6 @@ export class DatabaseOperations {
     const pool =  this._pool
     await pool.end()
 
-    //this._pool = null
     this._init = false
   }
 }
