@@ -1,9 +1,9 @@
-import { Logger } from './logger'
-import { APError} from './ap-error'
-import {Errors}   from './errors'
+import { Logger }                from './logger'
+import { APError}                from './ap-error'
+import {Errors}                  from './errors'
 import { FileStorageOperations } from './file-storage'
 //import {RedisOperations} from './redis'
-import {Base64Decode} from 'base64-stream'
+import {Base64Decode}            from 'base64-stream'
 import fs from 'fs'
 import path from 'path'
 

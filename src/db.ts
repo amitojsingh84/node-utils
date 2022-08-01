@@ -18,7 +18,8 @@ type Config = {
 export class DatabaseOperations {
   
   private logger     : Logger
-  private format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined) => string
+  private format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined)
+                        => string
   private _init      : boolean
   private _pool     !: mysql.Pool
   private DB_OFF     : boolean
@@ -36,8 +37,8 @@ export class DatabaseOperations {
 
   
 
-  constructor(config: Config) { 
-    this.logger      = new Logger('./logs', 'debug')
+  constructor(config: Config, logger : Logger) { 
+    this.logger      = logger
     this.format      = format
     this._init       = true
     this.DB_OFF      = false,
