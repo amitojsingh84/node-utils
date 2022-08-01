@@ -148,7 +148,7 @@ export class DatabaseOperations {
     return clause
   }
 
-  public async close() : Promise<void> {
+  public async close() {
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')

@@ -1,9 +1,9 @@
-import { Logger }  from './logger'
-import { APError } from './ap-error'
-import { Errors }  from './errors'
-import * as AWS    from 'aws-sdk'
-import * as stream from 'stream'
+import { Logger }         from './logger'
+import { APError }        from './ap-error'
+import { Errors }         from './errors'
 import { readConfigFile } from 'typescript'
+import * as AWS    from 'aws-sdk'
+import * as stream  from 'stream'
 
 const PRIVATE      : string = 'private',
       PUBLIC_READ  : string = 'public-read'
