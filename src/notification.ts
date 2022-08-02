@@ -53,7 +53,7 @@ export class Notification {
     const urlObj : UrlObj = {
       protocol: this.config.PROTOCOL,
       hostname: this.config.HOST,
-      port: this.config.PORT,
+      port    : this.config.PORT,
       pathname: this.config.PATH,
       
     },
