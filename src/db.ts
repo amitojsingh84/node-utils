@@ -18,7 +18,7 @@ type Config = {
 export class DatabaseOperations {
   
   private logger     : Logger
-  private format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined)
+  public format     : (sql: string, values: any[], stringifyObjects?: boolean | undefined, timeZone?: string | undefined)
                         => string
   private _init      : boolean
   private _pool     !: mysql.Pool
@@ -83,7 +83,7 @@ export class DatabaseOperations {
     }
 
     try {
-      const result : Object[] = await this._pool.query(query)
+      const result : any[] = await this._pool.query(query)
 
       this.logger.debug('executeQuery %s %s', UtilFunctions.getQueryLogStr(query), JSON.stringify(result))           
 
