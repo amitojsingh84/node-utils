@@ -23,7 +23,7 @@ export class DatabaseOperations {
   private _init      : boolean
   private _pool     !: mysql.Pool
   private DB_OFF     : boolean
-  
+    
   /**
    * @param config 
    *  
@@ -34,8 +34,6 @@ export class DatabaseOperations {
       DB_NAME    : DB name
       
    */
-
-  
 
   constructor(config: Config, logger : Logger) { 
     this.logger      = logger
@@ -112,7 +110,7 @@ export class DatabaseOperations {
   }
 
 
-  public addOrderClause(orderByArr : any[]) : string | undefined {
+  public addOrderClause(orderByArr : Array<any>) : string | undefined {
 
     if(!this._init) {
       this.logger.error('DB is not initialized.')
