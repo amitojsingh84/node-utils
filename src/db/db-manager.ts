@@ -7,10 +7,10 @@ import  mysql     from 'promise-mysql'
 
 export class DbManager {
 
-  private connection !: mysql.PoolConnection
+  private connection ?: mysql.PoolConnection
   private logger      : Logger
   private config      : Config
-  private clientPool !: mysql.Pool
+  private clientPool ?: mysql.Pool
   private dbClient    : DbClient
   private initialized : boolean = false
   

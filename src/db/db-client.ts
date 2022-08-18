@@ -16,8 +16,7 @@ export class DbClient {
                      fields    : [{field   : string, AS ?      : string}],
                      queryObj  : [{queryKey: string, queryValue: number|string}],
                      limit     : number    = -1,
-                     connection: mysql.PoolConnection
-                     ) {
+                     connection: mysql.PoolConnection) {
     this.logger.debug('Fetching from table', table)
     const fieldStr = [] as Array<string>,
           query    = [] as Array<string>
