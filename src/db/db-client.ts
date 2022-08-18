@@ -1,60 +1,17 @@
-import { Logger }  from "../logger"
+import { Logger }  from '../logger'
 import { APError } from '../ap-error'
 import { Errors }  from '../errors'
-import { Config }  from './db-manager-base'
-import Bluebird from "bluebird"
 import mysql from 'promise-mysql'
 
 export class DbClient {
-  private logger      : Logger
-  private poolConfig  : Config
-  private clientPool !: mysql.Pool
-  private initialized : boolean = false
-
-  constructor(config : Config, logger : Logger) {
+  private logger : Logger
+  
+  constructor(logger : Logger) {
     logger.debug('Constructing new oracle db client')
     this.logger = logger
-    this.poolConfig = config
-
-  }
-
-  public async init() {
-    this.logger.debug('Initializing OracleDbClient.')
-    try{
-    this.clientPool = await mysql.createPool({
-        connectionLimit : 50,
-        connectTimeout  : 20000,
-        acquireTimeout  : 20000,
-        host            : this.poolConfig.DB_HOST,
-        port            : this.poolConfig.DB_PORT,
-        user            : this.poolConfig.DB_USER,
-        password        : this.poolConfig.DB_PASSWORD,
-        database        : this.poolConfig.DB_NAME
-     })
-   } catch(e) {
-    throw new APError('DB_POOL_NOT_INITIALIZED', ' Error in creating DB pool')
-   }
-   this.initialized = true
+    
   }
   
-  public async beginTransaction() : Promise<mysql.PoolConnection> {
-    const connection = await this.clientPool.getConnection()
-    connection.beginTransaction()
-    return connection
-  }
-
-  public async endTransaction(connection : mysql.PoolConnection) {
-    connection.commit()
-    connection.release()
-  }
-  
-  public async close() {
-    if(!this.initialized) return
-    this.logger.debug('Closing Db Connection pool')
-    await this.clientPool.end()
-    this.initialized = false
-  }
-
   public async query(table     : string,
                      fields    : [{field   : string, AS ?      : string}],
                      queryObj  : [{queryKey: string, queryValue: number|string}],
@@ -143,29 +100,20 @@ export class DbClient {
 	 PRIVATE METHODS
 ------------------------------------------------------------------------------*/
   
-  public async executeEditQuery(type : string, query : string, table : string, userId : string,
+  private async executeEditQuery(type : string, query : string, table : string, userId : string,
                                 connection : mysql.PoolConnection) {
 
-    if(!this.initialized) {
-      this.logger.error('DB is not initialized.')
-      throw new APError(Errors.name.DB_NOT_INITIALIZED, Errors.message.DB_NOT_INITIALIZED)
-    }
 
     this.logger.info('executeEditQuery %s %s %s %s', type, query, table, userId)
-    const result : Object[] = await this.executeQuery(query, connection)
+    const result = await this.executeQuery(query, connection)
 
     return result
   }
 
-  public async executeQuery(query : string, connection : mysql.PoolConnection) {
-
-    if(!this.initialized) {
-      this.logger.error('DB is not initialized.')
-      throw new APError(Errors.name.DB_NOT_INITIALIZED, Errors.message.DB_NOT_INITIALIZED)
-    }
-
+  private async executeQuery(query : string, connection : mysql.PoolConnection) {
+    
     try {
-      const result = await this.clientPool.query(query)
+      const result = await connection.query(query)
       return result
     } catch(e) {
       connection.rollback()

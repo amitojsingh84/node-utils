@@ -1,2 +1,2 @@
-export * from './db-manager-base'
-export * from './db-manager-client'
+export * from './db-base'
+export * from './db-client'

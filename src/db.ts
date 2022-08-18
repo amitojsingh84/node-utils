@@ -63,7 +63,7 @@ export class DatabaseOperations {
     }
 
     this.logger.info('executeEditQuery %s %s %s %s', type, UtilFunctions.getQueryLogStr(query), tableName, userId)
-    const result : Object[] = await this.executeQuery(query)
+    const result = await this.executeQuery(query)
 
     return result
   }
@@ -81,7 +81,7 @@ export class DatabaseOperations {
     }
 
     try {
-      const result : any[] = await this._pool.query(query)
+      const result  = this._pool.query(query)
 
       this.logger.debug('executeQuery %s %s', UtilFunctions.getQueryLogStr(query), JSON.stringify(result))           
 
