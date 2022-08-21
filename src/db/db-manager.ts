@@ -7,7 +7,6 @@ import  mysql        from 'promise-mysql'
 
 
 export class DbManager {
-
   private logger      : Logger
   private config      : Config
   private clientPool !: mysql.Pool

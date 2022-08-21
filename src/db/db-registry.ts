@@ -85,23 +85,22 @@ export class DbRegistryManager {
     this.regMap.set(entity, new DbRegistry(entity))
   }
 
-  public static addField( entity     : string,
-                          fieldName  : string,
-                          fieldType  : FieldType,
-                          dataType   : string,
-                          unique     : boolean,
-                          indexed    : boolean
-                          ) {
+  public static addField(entity     : string,
+                         fieldName  : string,
+                         fieldType  : FieldType,
+                         dataType   : string,
+                         unique     : boolean,
+                         indexed    : boolean) {
 
-    const registry : any= this.getRegistry(entity),
-    fieldInfo : FieldInfo = {
-                        name    : fieldName,
-                        mapping : fieldName.toLowerCase(),
-                        type    : fieldType,
-                        dataType,
-                        unique,
-                        indexed
-                      }
+    const registry  : any       = this.getRegistry(entity), // TODO  : remove any
+          fieldInfo : FieldInfo = {
+                                    name    : fieldName,
+                                    mapping : fieldName.toLowerCase(),
+                                    type    : fieldType,
+                                    dataType,
+                                    unique,
+                                    indexed
+                                  }
 
     registry.addField(fieldInfo)
   }
