@@ -1,13 +1,13 @@
-import {Logger}   from '../logger'
-import {Config}   from './db-base'
-import {APError}  from '../ap-error'
-import {DbClient} from './db-client'
-import  mysql     from 'promise-mysql'
+import {Logger}      from '../logger'
+import {Config}      from './db-base'
+import {APError}     from '../ap-error'
+import {DbClient}    from './db-client'
+import {Transaction} from './db-transaction'
+import  mysql        from 'promise-mysql'
 
 
 export class DbManager {
 
-  private connection !: mysql.PoolConnection
   private logger      : Logger
   private config      : Config
   private clientPool !: mysql.Pool
@@ -40,23 +40,6 @@ export class DbManager {
    
   }
 
-  public async beginTransaction() {
-    
-    this.connection = await this.clientPool.getConnection()
-
-    this.connection.beginTransaction()
-    return this.connection
-  }
-
-  public async endTransaction() {
-    try{
-      await this.connection.commit()
-    } catch (err) {
-      this.logger.error('DB_ERROR', 'Error while commiting the transaction')
-    }
-    await this.connection.end()
-  }
-
   public close() {
     if(!this.initialized) return
     this.logger.debug('Closing Db Connection pool')
@@ -64,13 +47,15 @@ export class DbManager {
     this.initialized = false
   }
 
-  public async insert(table     : string,
-                      entity    : [{key: string, value: string|number}],
-                      userId    : string) {
+  public async insert(table      : string,
+                      entity     : [{key: string, value: string|number}],
+                      userId     : string, 
+                      transaction: Transaction ) {
+    const query = this.dbClient.insert(table, entity, userId)                    
     try {
-      return this.dbClient.insert(table, entity, userId, this.connection)
+      return this.dbClient.insert(table, entity, userId)
     } catch(e) {
-      this.connection.rollback()
+      transaction.rollback()
       throw new APError('DB_ERROR', 'Error while executing the query')
     }
   }
@@ -78,13 +63,14 @@ export class DbManager {
   public async query( table     : string,
                       fields    : [{field   : string, AS ?      : string}],
                       queryObj  : [{queryKey: string, queryValue: number|string}],
-                      limit     : number    = -1,) {
+                      limit     : number    = -1,
+                      transaction : Transaction) {
                          
     try {
-      
-      return this.dbClient.query(table, fields, queryObj, limit, this.connection)        
+      const query = this.dbClient.query(table, fields, queryObj, limit) 
+      return transaction.query(query)   
     } catch(e) {
-      this.connection.rollback()
+      transaction.rollback()
       throw new APError('DB_ERROR', 'Error while executing the query')
     }
     
@@ -92,12 +78,14 @@ export class DbManager {
 
   public async delete(table     : string,
                       queryObj  : [{queryKey: string,comparator: string, queryValue: number|string}],
-                      userId    : string) {
+                      userId    : string,
+                      transaction : Transaction) {
 
     try {  
-    return this.dbClient.delete(table, queryObj, userId, this.connection)
+    const query = this.dbClient.delete(table, queryObj, userId)
+    return transaction.query(query)
     } catch(e) {
-      this.connection.rollback()
+      transaction.rollback()
       throw new APError('DB_ERROR', 'Error while executing the query')
     }
   }
@@ -105,11 +93,13 @@ export class DbManager {
   public async update(table     : string,
                       updates   : [{key     : string, value    : string|number}],
                       queryObj  : [{queryKey: string,comparator: string, queryValue: number|string}],
-                      userId    : string) {
+                      userId    : string,
+                      transaction : Transaction) {
     try {
-      return this.dbClient.update(table, updates, queryObj, userId, this.connection)
+      const query = this.dbClient.update(table, updates, queryObj, userId)
+      return transaction.query(query)
     } catch(e) {
-      this.connection.rollback()
+      transaction.rollback()
       throw new APError('DB_ERROR', 'Error while executing the query')
     }
   }

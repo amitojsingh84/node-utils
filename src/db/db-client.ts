@@ -12,12 +12,10 @@ export class DbClient {
     
   }
   
-  public async query(table     : string,
+  public query(table     : string,
                      fields    : [{field   : string, AS ?      : string}],
                      queryObj  : [{queryKey: string, queryValue: number|string}],
-                     limit     : number    = -1,
-                     connection: mysql.PoolConnection
-                     ) {
+                     limit     : number    = -1) {
     this.logger.debug('Fetching from table', table)
     const fieldStr = [] as Array<string>,
           query    = [] as Array<string>
@@ -38,13 +36,12 @@ export class DbClient {
     if(limit !== -1) {
       queryStr += `LIMIT ${limit}`
     }
-		return this.executeQuery(queryStr, connection)
+		return queryStr
   }
 
-  public async insert(table     : string,
+  public insert(table     : string,
                       entity    : [{key: string, value: string|number}],
-                      userId    : string,
-                      connection: mysql.PoolConnection) {
+                      userId    : string) {
     this.logger.debug('Inserting into table, ' + table + '.', entity)
     const keys   = [] as Array<string>,
           values = [] as Array<string|number>
@@ -55,15 +52,14 @@ export class DbClient {
     const query = `INSERT INTO ${table} (${keys.join(', ')}) VALUES 
                    (${values.join(', ')})` 
     
-    return this.executeEditQuery('INSERT', query, table, userId, connection)               
+    return query              
 
   }
 
-  public async update(table     : string,
+  public update(table     : string,
                       updates   : [{key     : string, value    : string|number}],
                       queryObj  : [{queryKey: string,comparator: string, queryValue: number|string}],
-                      userId    : string,
-                      connection: mysql.PoolConnection) {
+                      userId    : string) {
     this.logger.debug(`Updating ${table} with updates : ${updates} for ${queryObj} `)
     const changes = [] as Array<string>,
           queries = [] as Array<string>
@@ -77,14 +73,14 @@ export class DbClient {
     }
 
     const query = `UPDATE TABLE ${table} SET ${changes.join(', ')} WHERE
-                   ${queries.join('AND ')}` 
-    return this.executeEditQuery('UPDATE', query, table, userId, connection)    
+                   ${queries.join('AND ')}`
+
+    return query    
   }
 
-  public async delete(table     : string,
+  public delete(table     : string,
                       queryObj: [{queryKey: string,comparator: string, queryValue: number|string}],
-                      userId    : string,
-                      connection: mysql.PoolConnection) {
+                      userId    : string) {
     
     this.logger.debug(`Delete from ${table} where ${queryObj}`) 
     const condition = [] as Array<string>
@@ -93,34 +89,34 @@ export class DbClient {
     } 
     const query = `DELETE FROM ${table} WHERE ${condition.join('AND ')}` 
 
-    return this.executeEditQuery('DELETE', query, table, userId, connection)                  
+    return query
   }
 
-/*------------------------------------------------------------------------------
-	 PRIVATE METHODS
-------------------------------------------------------------------------------*/
+// /*------------------------------------------------------------------------------
+// 	 PRIVATE METHODS
+// ------------------------------------------------------------------------------*/
   
-  private async executeEditQuery(type : string, query : string, table : string, userId : string,
-                                connection : mysql.PoolConnection) {
+//   private async executeEditQuery(type : string, query : string, table : string, userId : string,
+//                                 connection : mysql.PoolConnection) {
 
 
-    this.logger.info('executeEditQuery %s %s %s %s', type, query, table, userId)
-    const result = await this.executeQuery(query, connection)
+//     this.logger.info('executeEditQuery %s %s %s %s', type, query, table, userId)
+//     const result = await this.executeQuery(query, connection)
 
-    return result
-  }
+//     return result
+//   }
 
-  private async executeQuery(query : string, connection : mysql.PoolConnection) {
+//   private async executeQuery(query : string, connection : mysql.PoolConnection) {
     
-    try {
-      const result = await connection.query(query)
-      return result
-    } catch(e) {
-      connection.rollback()
-      this.logger.error('executeQuery error %s', e)
-      throw new APError(Errors.name.DB_ERROR, Errors.message.DB_ERROR)
-    }
-  }
+//     try {
+//       const result = await connection.query(query)
+//       return result
+//     } catch(e) {
+//       connection.rollback()
+//       this.logger.error('executeQuery error %s', e)
+//       throw new APError(Errors.name.DB_ERROR, Errors.message.DB_ERROR)
+//     }
+//   }
 
 
 }

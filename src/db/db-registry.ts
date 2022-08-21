@@ -1,6 +1,6 @@
-import { FieldType } from "./db-base"
+import  {FieldType}  from "./db-base"
 import  {APError}    from '../ap-error'  
-import  {Logger }  from '../logger'
+import  {Logger }    from '../logger'
 
 export type FieldInfo = {
   name      : string
