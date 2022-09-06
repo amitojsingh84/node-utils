@@ -20,23 +20,21 @@ export class DbManager {
   }
   
   public async init() {
-    try{
-    this.clientPool = await mysql.createPool({
-      connectionLimit : 50,
-      connectTimeout  : 20000,
-      acquireTimeout  : 20000,
-      host            : this.config.db_host,
-      port            : this.config.db_port,
-      user            : this.config.db_user,
-      password        : this.config.db_password,
-      database        : this.config.db_name
-   }) 
-  } catch(err) {
-    throw new APError('DB_POOL_NOT_INITIALIZED', ' Error in creating DB pool')
-   }
-
-   this.initialized = true
-   
+    try {
+      this.clientPool = await mysql.createPool({
+        connectionLimit : 50,
+        connectTimeout  : 20000,
+        acquireTimeout  : 20000,
+        host            : this.config.db_host,
+        port            : this.config.db_port,
+        user            : this.config.db_user,
+        password        : this.config.db_password,
+        database        : this.config.db_name
+      }) 
+    } catch(err) {
+      throw new APError('DB_POOL_NOT_INITIALIZED', ' Error in creating DB pool')
+    }
+    this.initialized = true
   }
 
   public close() {
@@ -59,11 +57,11 @@ export class DbManager {
     }
   }
 
-  public async query( table     : string,
-                      fields    : [{field   : string, AS ?      : string}],
-                      queryObj  : [{queryKey: string, queryValue: number|string}],
-                      limit     : number    = -1,
-                      transaction : Transaction) {
+  public async query(table     : string,
+                     fields    : [{field   : string, AS ?      : string}],
+                     queryObj  : [{queryKey: string, queryValue: number|string}],
+                     limit     : number    = -1,
+                     transaction : Transaction) {
                          
     try {
       const query = this.dbClient.query(table, fields, queryObj, limit) 

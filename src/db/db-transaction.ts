@@ -24,7 +24,7 @@ export class Transaction {
   }
 
   public async rollback() {
-    this.connection.rollback()
+    await this.connection.rollback()
   }
 
   public async end() {
@@ -32,6 +32,7 @@ export class Transaction {
       await this.connection.commit()
     } catch (err) {
       this.logger.error('DB_ERROR', 'Error while commiting the transaction')
+      await this.rollback()
     }
     await this.connection.end()
   }
