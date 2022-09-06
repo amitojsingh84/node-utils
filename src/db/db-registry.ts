@@ -70,7 +70,7 @@ export class DbRegistry {
 }
 
 /*------------------------------------------------------------------------------
-   Obmop Registry Manager
+   Registry Manager
 ------------------------------------------------------------------------------*/
 export type RegMap = {}
 export class DbRegistryManager {
