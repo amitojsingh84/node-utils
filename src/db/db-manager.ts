@@ -12,11 +12,13 @@ export class DbManager {
   private clientPool !: mysql.Pool
   private dbClient    : DbClient
   private initialized : boolean = false
+
   
   constructor(config: Config, logger : Logger) { 
     this.logger   = logger
     this.config   = config
     this.dbClient = new DbClient(logger)
+    
   }
   
   public async init() {
@@ -30,11 +32,12 @@ export class DbManager {
       user            : this.config.db_user,
       password        : this.config.db_password,
       database        : this.config.db_name
+
    }) 
   } catch(err) {
     throw new APError('DB_POOL_NOT_INITIALIZED', ' Error in creating DB pool')
    }
-
+   
    this.initialized = true
    
   }
