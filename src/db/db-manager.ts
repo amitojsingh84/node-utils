@@ -13,41 +13,12 @@ export class DbManager {
   private clientPool !: mysql.Pool
   private dbClient    : DbClient
   private initialized : boolean = false
-<<<<<<< HEAD
-
-=======
   private transaction : Transaction
->>>>>>> 2e0c0542d3c3e0a8932c6cc33e5f7ad5d5624b07
   
   constructor(config: Config, logger : Logger) { 
     this.logger   = logger
     this.config   = config
     this.dbClient = new DbClient(logger)
-<<<<<<< HEAD
-    
-  }
-  
-  public async init() {
-    try{
-    this.clientPool = await mysql.createPool({
-      connectionLimit : 50,
-      connectTimeout  : 20000,
-      acquireTimeout  : 20000,
-      host            : this.config.db_host,
-      port            : this.config.db_port,
-      user            : this.config.db_user,
-      password        : this.config.db_password,
-      database        : this.config.db_name
-
-   }) 
-  } catch(err) {
-    throw new APError('DB_POOL_NOT_INITIALIZED', ' Error in creating DB pool')
-   }
-   
-   this.initialized = true
-   
-  }
-=======
     try {
       this.clientPool = mysql.createPool({
         connectionLimit : 50,
@@ -83,7 +54,6 @@ export class DbManager {
   //   }
   //   this.initialized = true
   // }
->>>>>>> 2e0c0542d3c3e0a8932c6cc33e5f7ad5d5624b07
 
   public close() {
     if(!this.initialized) return
