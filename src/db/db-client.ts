@@ -1,21 +1,18 @@
 import { Logger }  from '../logger'
-import { APError } from '../ap-error'
-import { Errors }  from '../errors'
-import mysql from 'promise-mysql'
 
 export class DbClient {
   private logger : Logger
   
   constructor(logger : Logger) {
     logger.debug('Constructing new oracle db client')
-    this.logger = logger
-    
+    this.logger = logger 
   }
   
-  public query(table     : string,
-                     fields    : [{field   : string, AS ?      : string}],
-                     queryObj  : [{queryKey: string, queryValue: number|string}],
-                     limit     : number    = -1) {
+  public query(table    : string,
+               fields   : [{field   : string, AS ?      : string}],
+               queryObj : [{queryKey: string, queryValue: number|string}],
+               limit    : number    = -1) {
+                
     this.logger.debug('Fetching from table', table)
     const fieldStr = [] as Array<string>,
           query    = [] as Array<string>

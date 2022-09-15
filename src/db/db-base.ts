@@ -1,12 +1,9 @@
-import { Logger } from "../logger";
+import { Logger } from '../logger'
 
 export class DbManagerEntity {
-  private logger: Logger
   private entity: string
 
-  constructor(logger: Logger, entity: string) {
-    this.logger = logger
-    this.logger.debug('Inside DbManagerEntity')
+  constructor(entity: string) {
     this.entity = entity
   }
 
@@ -16,11 +13,11 @@ export class DbManagerEntity {
 }
 
 export type Config = { 
-  db_host   : string
-  db_port    : number
-  db_user    : string
-  db_password: string
-  db_name    : string 
+  db_host     : string
+  db_port     : number
+  db_user     : string
+  db_password : string
+  db_name     : string 
 }
 
 export enum FieldType {
