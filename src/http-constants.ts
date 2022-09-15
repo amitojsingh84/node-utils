@@ -1,8 +1,9 @@
 // TODO : these should be enums
 export const HTTP = {
-  HeaderKey   : {
-    contentType : 'content-type',
-    requestId   : 'request-id'
+  HeaderKey          : {
+    contentType      : 'content-type',
+    requestId        : 'request-id',
+    authorization    : 'authorization',
   },
   
   HeaderValue : {
