@@ -11,3 +11,4 @@ pm2-config.json
 db.txt
 dbDump.sql
 temp/
+package-lock.json
