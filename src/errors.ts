@@ -138,7 +138,8 @@ export const Errors = {
     NBFC_NOT_ACTIVE                        : 'NBFC_NOT_ACTIVE',
     ERROR_SENDING_SMS                      : 'ERROR_SENDING_SMS',
     LAB_TEST_PAYMENT_NOT_PERMITTED         : 'LAB_TEST_PAYMENT_NOT_PERMITTED',
-    LAB_TEST_UPDATION_IN_PROGRESS          : 'LAB_TEST_UPDATION_IN_PROGRESS'
+    LAB_TEST_UPDATION_IN_PROGRESS          : 'LAB_TEST_UPDATION_IN_PROGRESS',
+    INVALID_METHOD                         : 'INVALID_METHOD'
   },
   message : {
     DB_ERROR                               : 'Error occurred in executing DB query.',
@@ -151,7 +152,7 @@ export const Errors = {
     INVALID_COUPON_CODE                    : 'Coupon name is required.',
     INVALID_USER_EMAIL                     : 'User email is missing or required.',
     COUPON_EXISTS                          : 'This coupon name already exists.',
-    INVALID_HOSPITAL_NAME                  : 'Hopital name is missing or invalid.',
+    INVALID_HOSPITAL_NAME                  : 'Hopital name INVALID_METHODis missing or invalid.',
     INVALID_COUPONS                        : 'Please add atleast one coupon.',
     INVALID_MOBILE                         : 'Mobile number is invalid or missing.',
     INVALID_WALLET_SERIAL                  : 'Wallet serial is invalid or missing.',
@@ -279,6 +280,8 @@ export const Errors = {
     INVALID_LAB_TEST_PAYMENT_STATUS        : 'Invalid lab test request payment status.',
     LAB_TEST_UPDATION_IN_PROGRESS          : 'There is an operation in process for this lab test request.',
     ERROR_SENDING_SMS                      : 'Error in sending SMS.',
-    LAB_TEST_PAYMENT_NOT_PERMITTED         : 'Lab test payment cannot be updated at the current stage.'
+    LAB_TEST_PAYMENT_NOT_PERMITTED         : 'Lab test payment cannot be updated at the current stage.',
+    NOT_FOUND                              : 'Not Found',
+    INVALID_METHOD                         : 'Invalid Method'
   }
 }

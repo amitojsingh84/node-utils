@@ -1,2 +1,13 @@
-node_modules
-lib
+logs/
+npm-debug.log*
+node_modules/
+*.tsbuildinfo
+dist/
+.vscode/
+.idea/
+env.json
+keys/
+pm2-config.json
+db.txt
+dbDump.sql
+temp/

@@ -2,7 +2,7 @@ import { Logger }       from './logger'
 import { createClient } from 'redis'
 
 
-export class RedisUtility {
+export class RedisOperations {
 
   private connectionConfig : any
   private logger           : Logger
@@ -32,5 +32,14 @@ export class RedisUtility {
     console.log(value)
 
   }
-}
 
+  async hset(a: string,b: string,c: string) {
+
+  }
+  async hget(a: string,b: string) {
+return ''
+  }
+  async hdel(a: string,b: string) {
+
+  }
+}

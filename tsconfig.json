@@ -1,15 +1,13 @@
 {
   "compilerOptions": {
-    "target"                           : "esnext",                
-    "module"                           : "commonjs",
-    "declaration"                      : true,
-    "outDir"                           : "./lib",
-    "strict"                           : true,
-    "esModuleInterop"                  : true,
-    "skipLibCheck"                     : true,
-    "forceConsistentCasingInFileNames" : true
+    "target"                            : "esnext",
+    "module"                            : "commonjs",
+    "outDir"                            : "./dist",
+    "strict"                            : true,
+    "esModuleInterop"                   : true,
+    "skipLibCheck"                      : true,
+    "forceConsistentCasingInFileNames"  : true
   },
-  "include": [
-    "src"
-  ]
+  "include"                             : ["src"],
+  "exclude"                             : ["node_modules"]
 }
