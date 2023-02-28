@@ -6,9 +6,7 @@
   "scripts": {
     "postinstall": "mkdir -p temp",
     "server": "nodemon src/index.ts",
-    "build": "tsc --build --clean && tsc",
-    "start": "",
-    "stop": ""
+    "build": "tsc --build --clean && tsc"
   },
   "nodemonConfig": {
     "watch": [
